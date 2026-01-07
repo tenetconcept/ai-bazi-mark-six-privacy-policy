@@ -1,0 +1,16 @@
+<resources>
+  <string name="appName">"Mark Six Analysis: Bazi Version"</string>
+  <string name="tabs">"[object Object]"</string>
+  <string name="luckyNumbers">"[object Object]"</string>
+  <string name="places">"[object Object]"</string>
+  <string name="birthPlaces">"[object Object]"</string>
+  <string name="baziAnalysis">"[object Object]"</string>
+  <string name="history">"[object Object]"</string>
+  <string name="settings">"[object Object]"</string>
+  <string name="disclaimer">"[object Object]"</string>
+  <string name="privacy">"[object Object]"</string>
+  <string name="terms">"[object Object]"</string>
+  <string name="howToPlay">"[object Object]"</string>
+  <string name="common">"[object Object]"</string>
+  <string name="ads">"[object Object]"</string>
+</resources>

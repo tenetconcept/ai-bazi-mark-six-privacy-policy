@@ -1,0 +1,20 @@
+<resources>
+  <string name="app_name">六合彩AI分析 - 五行八字</string>
+  <string name="expo_splash_screen_resize_mode" translatable="false">contain</string>
+  <string name="expo_splash_screen_status_bar_translucent" translatable="false">false</string>
+  <string name="expo_system_ui_user_interface_style" translatable="false">light</string>
+  <string name="appName">六合彩分析 八字版</string>
+  <string name="tabs" translatable="false">tabs</string>
+  <string name="luckyNumbers" translatable="false">luckyNumbers</string>
+  <string name="places" translatable="false">places</string>
+  <string name="birthPlaces" translatable="false">birthPlaces</string>
+  <string name="baziAnalysis" translatable="false">baziAnalysis</string>
+  <string name="history" translatable="false">history</string>
+  <string name="settings" translatable="false">settings</string>
+  <string name="disclaimer" translatable="false">disclaimer</string>
+  <string name="privacy" translatable="false">privacy</string>
+  <string name="terms" translatable="false">terms</string>
+  <string name="howToPlay" translatable="false">howToPlay</string>
+  <string name="common" translatable="false">common</string>
+  <string name="ads" translatable="false">ads</string>
+</resources>
