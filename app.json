@@ -10,7 +10,7 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#C41E3A"
+      "backgroundColor": "#B01838"
     },
     "ios": {
       "supportsTablet": true,
@@ -29,15 +29,14 @@
       "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#C41E3A"
+        "backgroundColor": "#B01838"
       },
       "permissions": [
         "android.permission.INTERNET",
+        "com.android.vending.BILLING",
+        "android.permission.INTERNET",
         "com.android.vending.BILLING"
       ],
-      "config": {
-        "googleMobileAdsAppId": "ca-app-pub-2314269403508483~9217418921"
-      },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },
@@ -45,25 +44,29 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      [
-        "expo-localization"
-      ],
+      "expo-localization",
       "@react-native-community/datetimepicker",
-      "expo-font"
+      "expo-font",
+      "react-native-iap",
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-2314269403508483~9476309893",
+          "iosAppId": "ca-app-pub-2314269403508483~9476309893"
+        }
+      ]
     ],
-    "locales": {
-      "zh-Hant": "./src/i18n/locales/zh-TW.json",
-      "zh-Hans": "./src/i18n/locales/zh-CN.json",
-      "en": "./src/i18n/locales/en.json",
-      "fil": "./src/i18n/locales/fil.json",
-      "th": "./src/i18n/locales/th.json",
-      "hi": "./src/i18n/locales/hi.json"
-    },
     "extra": {
       "eas": {
         "projectId": "2e189b13-a34b-4121-b71d-8d49c414fcab"
       }
     },
-    "owner": "tenet-concept"
+    "owner": "tenet-concept",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/2e189b13-a34b-4121-b71d-8d49c414fcab"
+    }
   }
 }

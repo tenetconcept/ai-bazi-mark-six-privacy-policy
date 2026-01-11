@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import AnimatedBanner from '../components/AnimatedBanner';
 import { Ionicons } from '@expo/vector-icons';
 
 import { getColors, SPACING, BORDER_RADIUS, FONTS, SHADOWS, getFontSizes } from '../constants/theme';
@@ -35,22 +36,33 @@ const BaziAnalysisScreen: React.FC = () => {
       backgroundColor: COLORS.background,
     },
     header: {
-      paddingTop: 60,
+      paddingTop: 30,
       paddingHorizontal: SPACING.lg,
-      paddingBottom: SPACING.xl,
+      paddingBottom: SPACING.sm,
       borderBottomLeftRadius: BORDER_RADIUS.xxl,
       borderBottomRightRadius: BORDER_RADIUS.xxl,
+      borderBottomWidth: 3,
+      borderBottomColor: 'rgba(255, 215, 0, 0.3)',
+      shadowColor: '#FFD700',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 8,
+      elevation: 8,
     },
     headerTitle: {
-      fontSize: FONT_SIZES.xxl,
-      fontWeight: 'bold',
-      color: COLORS.textWhite,
+      fontSize: FONT_SIZES.xxxl,
+      color: '#FFD700', // Shiny Gold
       textAlign: 'center',
+      fontFamily: 'MaShanZheng_400Regular',
+      textShadowColor: '#B8860B',
+      textShadowOffset: { width: 2, height: 2 },
+      textShadowRadius: 4,
+      letterSpacing: 1,
     },
     headerSubtitle: {
-      fontSize: FONT_SIZES.md,
-      color: COLORS.textWhite,
-      opacity: 0.9,
+      fontSize: FONT_SIZES.lg,
+      color: '#FFED4E', // Light shiny gold
+      opacity: 0.95,
       textAlign: 'center',
       marginTop: SPACING.xs,
     },
@@ -92,12 +104,6 @@ const BaziAnalysisScreen: React.FC = () => {
       marginLeft: SPACING.md,
       flex: 1,
     },
-    userName: {
-      fontSize: FONT_SIZES.lg,
-      fontWeight: 'bold',
-      color: COLORS.textPrimary,
-      marginBottom: SPACING.xs,
-    },
     userMetaRow: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -114,6 +120,21 @@ const BaziAnalysisScreen: React.FC = () => {
     },
     baziCard: {
       marginBottom: SPACING.lg,
+      backgroundColor: COLORS.primary, // Festive Red (or Dark Red)
+      borderWidth: 1,
+      borderColor: '#FFD700', // Gold Border
+      borderRadius: BORDER_RADIUS.lg,
+      padding: SPACING.md, // Reduced padding to let inner cream box fit well
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.23,
+      shadowRadius: 2.62,
+      elevation: 4,
+    },
+    baziCardContent: {
+      backgroundColor: COLORS.cardInnerBackground, // Cream or Dark Grey
+      borderRadius: BORDER_RADIUS.md,
+      padding: SPACING.lg,
     },
     pillarsContainer: {
       flexDirection: 'row',
@@ -124,8 +145,9 @@ const BaziAnalysisScreen: React.FC = () => {
     },
     pillarLabel: {
       fontSize: FONT_SIZES.xs,
-      color: COLORS.textSecondary,
+      color: COLORS.textBrand, // Dark Red or Gold
       marginBottom: SPACING.sm,
+      fontWeight: 'bold',
     },
     pillarChars: {
       alignItems: 'center',
@@ -141,6 +163,21 @@ const BaziAnalysisScreen: React.FC = () => {
     },
     elementsCard: {
       marginBottom: SPACING.lg,
+      backgroundColor: COLORS.primary,
+      borderWidth: 1,
+      borderColor: '#FFD700', // Gold Border
+      borderRadius: BORDER_RADIUS.lg,
+      padding: SPACING.md,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.23,
+      shadowRadius: 2.62,
+      elevation: 4,
+    },
+    elementsCardContent: {
+      backgroundColor: COLORS.cardInnerBackground,
+      borderRadius: BORDER_RADIUS.md,
+      padding: SPACING.lg,
     },
     elementsContainer: {},
     elementItem: {
@@ -154,17 +191,20 @@ const BaziAnalysisScreen: React.FC = () => {
       borderRadius: 18,
       justifyContent: 'center',
       alignItems: 'center',
+      borderWidth: 1,
+      borderColor: '#FFFFFF',
     },
     elementChar: {
-      fontSize: FONT_SIZES.md,
-      fontWeight: 'bold',
-      color: COLORS.textWhite,
+       fontSize: FONT_SIZES.md,
+       fontWeight: 'bold',
+       color: COLORS.textWhite,
     },
     elementName: {
       width: 40,
       fontSize: FONT_SIZES.sm,
-      color: COLORS.textSecondary,
+      color: COLORS.textBrand,
       marginLeft: SPACING.sm,
+      fontWeight: 'bold',
     },
     elementBar: {
       flex: 1,
@@ -181,30 +221,61 @@ const BaziAnalysisScreen: React.FC = () => {
       width: 20,
       fontSize: FONT_SIZES.md,
       fontWeight: 'bold',
-      color: COLORS.textPrimary,
+      color: COLORS.textBrand,
       textAlign: 'right',
     },
     fortuneCard: {
       marginBottom: SPACING.lg,
+      backgroundColor: COLORS.primary,
+      borderWidth: 1,
+      borderColor: '#FFD700', // Gold Border
+      borderRadius: BORDER_RADIUS.lg,
+      padding: SPACING.md,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.23,
+      shadowRadius: 2.62,
+      elevation: 4,
+    },
+    fortuneCardContent: {
+      backgroundColor: COLORS.cardInnerBackground,
+      borderRadius: BORDER_RADIUS.md,
+      padding: SPACING.lg,
     },
     fortuneItem: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingVertical: SPACING.sm,
+      paddingVertical: SPACING.s,
       borderBottomWidth: 1,
-      borderBottomColor: COLORS.borderLight,
+      borderBottomColor: 'rgba(218, 165, 32, 0.3)', // GoldenRod
     },
     fortuneLabel: {
       flex: 1,
       fontSize: FONT_SIZES.md,
-      color: COLORS.textPrimary,
+      color: COLORS.textBrand,
       marginLeft: SPACING.md,
+      fontWeight: 'bold',
     },
     fortuneStars: {
       fontSize: FONT_SIZES.md,
     },
     luckyCard: {
       marginBottom: SPACING.lg,
+      backgroundColor: COLORS.primary,
+      borderWidth: 1,
+      borderColor: '#FFD700', // Gold Border
+      borderRadius: BORDER_RADIUS.lg,
+      padding: SPACING.md,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.23,
+      shadowRadius: 2.62,
+      elevation: 4,
+    },
+    luckyCardContent: {
+      backgroundColor: COLORS.cardInnerBackground,
+      borderRadius: BORDER_RADIUS.md,
+      padding: SPACING.lg,
     },
     luckyItem: {
       flexDirection: 'row',
@@ -214,13 +285,14 @@ const BaziAnalysisScreen: React.FC = () => {
     luckyLabel: {
       flex: 1,
       fontSize: FONT_SIZES.md,
-      color: COLORS.textPrimary,
+      color: COLORS.textBrand,
       marginLeft: SPACING.md,
+      fontWeight: '600',
     },
     luckyValue: {
       fontSize: FONT_SIZES.lg,
       fontWeight: 'bold',
-      color: COLORS.primary,
+      color: COLORS.primary, // Or textBrand
     },
     bottomSpacer: {
       height: SPACING.xxl,
@@ -295,14 +367,54 @@ const BaziAnalysisScreen: React.FC = () => {
         purple: 'Purple', yellow: 'Yellow', brown: 'Brown', beige: 'Beige',
         white: 'White', gold: 'Gold', silver: 'Silver', black: 'Black', grey: 'Grey',
       },
+      th: {
+        green: 'เขียว', blue: 'น้ำเงิน', red: 'แดง', orange: 'ส้ม',
+        purple: 'ม่วง', yellow: 'เหลือง', brown: 'น้ำตาล', beige: 'เบจ',
+        white: 'ขาว', gold: 'ทอง', silver: 'เงิน', black: 'ดำ', grey: 'เทา',
+      },
+      fil: {
+        green: 'Berde', blue: 'Asul', red: 'Pula', orange: 'Kahel',
+        purple: 'Lila', yellow: 'Dilaw', brown: 'Kayumanggi', beige: 'Beige',
+        white: 'Puti', gold: 'Ginto', silver: 'Pilak', black: 'Itim', grey: 'Abo',
+      },
+      id: {
+        green: 'Hijau', blue: 'Biru', red: 'Merah', orange: 'Oranye',
+        purple: 'Ungu', yellow: 'Kuning', brown: 'Cokelat', beige: 'Krem',
+        white: 'Putih', gold: 'Emas', silver: 'Perak', black: 'Hitam', grey: 'Abu-abu',
+      },
+      hi: {
+        green: 'हरा', blue: 'नीला', red: 'लाल', orange: 'नारंगी',
+        purple: 'बैंगनी', yellow: 'पीला', brown: 'भूरा', beige: 'बेज',
+        white: 'सफेद', gold: 'सुनहरा', silver: 'चांदी', black: 'काला', grey: 'धूसर',
+      },
     };
 
-    const locale = language.startsWith('zh') ? (language === 'zh-CN' ? 'zh-CN' : 'zh-TW') : 'en';
-    return colorMap[locale][color] || color;
+    // Use specific language or fallback to English, but handle Chinese variants correctly
+    const locale = (language in colorMap) ? language : (language.startsWith('zh') ? (language === 'zh-CN' ? 'zh-CN' : 'zh-TW') : 'en');
+    return colorMap[locale]?.[color] || colorMap['en'][color] || color;
   };
 
   const getBirthPlaceName = (code: string): string => {
     return i18n.t(`birthPlaces.${code}`);
+  };
+
+  const getLuckyTextColor = (color: string): string => {
+    const colorMap: Record<string, string> = {
+      green: '#00AA00',   // Vivid Green
+      blue: '#0066FF',    // Bright Blue
+      red: '#FF0000',     // Bright Red
+      orange: '#FF5500',  // Bright Orange
+      purple: '#9932CC',  // Dark Orchid (Vibrant)
+      yellow: '#D4AF37',  // Metallic Gold (Readable)
+      brown: '#8B4513',   // Saddle Brown
+      beige: '#B8860B',   // Dark Goldenrod (Readable version of beige)
+      white: '#708090',   // Slate Gray (Readable version of white)
+      gold: '#DAA520',    // Goldenrod
+      silver: '#778899',  // Light Slate Gray
+      black: '#000000',
+      grey: '#696969',
+    };
+    return colorMap[color] || '#C41E3A';
   };
 
   const formatBirthTime = (hour: number): string => {
@@ -348,13 +460,13 @@ const BaziAnalysisScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.container} edges={[]}>
       {/* Header */}
-      <LinearGradient
+      <AnimatedBanner
         colors={[COLORS.gradientStart, COLORS.gradientEnd]}
         style={styles.header}
       >
         <Text style={styles.headerTitle}>{i18n.t('baziAnalysis.title')}</Text>
         <Text style={styles.headerSubtitle}>{i18n.t('baziAnalysis.subtitle')}</Text>
-      </LinearGradient>
+      </AnimatedBanner>
 
       <ScrollView
         style={styles.scrollView}
@@ -362,132 +474,169 @@ const BaziAnalysisScreen: React.FC = () => {
         showsVerticalScrollIndicator={false}
       >
         {/* Bazi Pillars */}
-        <Card title={i18n.t('baziAnalysis.yourBazi')} style={styles.baziCard}>
-          <View style={styles.pillarsContainer}>
-            {/* Year Pillar */}
-            <View style={styles.pillar}>
-              <Text style={styles.pillarLabel}>{i18n.t('baziAnalysis.yearPillar')}</Text>
-              <View style={styles.pillarChars}>
-                <Text style={[styles.stemChar, { color: getElementColor(FIVE_ELEMENTS[baziResult.yearPillar.stem as keyof typeof FIVE_ELEMENTS]) }]}>
-                  {baziResult.yearPillar.stem}
-                </Text>
-                <Text style={[styles.branchChar, { color: getElementColor(FIVE_ELEMENTS[baziResult.yearPillar.branch as keyof typeof FIVE_ELEMENTS]) }]}>
-                  {baziResult.yearPillar.branch}
-                </Text>
+        <View style={styles.baziCard}>
+           <View style={{ marginBottom: SPACING.md, borderBottomWidth: 1, borderBottomColor: '#FFD700', paddingBottom: SPACING.xs }}>
+              <Text style={{ fontSize: FONT_SIZES.lg, fontWeight: 'bold', color: '#FFD700' }}>
+                {i18n.t('baziAnalysis.yourBazi')}
+              </Text>
+           </View>
+          <View style={styles.baziCardContent}>
+            <View style={styles.pillarsContainer}>
+              {/* Year Pillar */}
+              <View style={styles.pillar}>
+                <Text style={styles.pillarLabel}>{i18n.t('baziAnalysis.yearPillar')}</Text>
+                <View style={styles.pillarChars}>
+                  <Text style={[styles.stemChar, { color: getElementColor(FIVE_ELEMENTS[baziResult.yearPillar.stem as keyof typeof FIVE_ELEMENTS]) }]}>
+                    {baziResult.yearPillar.stem}
+                  </Text>
+                  <Text style={[styles.branchChar, { color: getElementColor(FIVE_ELEMENTS[baziResult.yearPillar.branch as keyof typeof FIVE_ELEMENTS]) }]}>
+                    {baziResult.yearPillar.branch}
+                  </Text>
+                </View>
               </View>
-            </View>
-
-            {/* Month Pillar */}
-            <View style={styles.pillar}>
-              <Text style={styles.pillarLabel}>{i18n.t('baziAnalysis.monthPillar')}</Text>
-              <View style={styles.pillarChars}>
-                <Text style={[styles.stemChar, { color: getElementColor(FIVE_ELEMENTS[baziResult.monthPillar.stem as keyof typeof FIVE_ELEMENTS]) }]}>
-                  {baziResult.monthPillar.stem}
-                </Text>
-                <Text style={[styles.branchChar, { color: getElementColor(FIVE_ELEMENTS[baziResult.monthPillar.branch as keyof typeof FIVE_ELEMENTS]) }]}>
-                  {baziResult.monthPillar.branch}
-                </Text>
+              {/* Month Pillar */}
+              <View style={styles.pillar}>
+                <Text style={styles.pillarLabel}>{i18n.t('baziAnalysis.monthPillar')}</Text>
+                <View style={styles.pillarChars}>
+                  <Text style={[styles.stemChar, { color: getElementColor(FIVE_ELEMENTS[baziResult.monthPillar.stem as keyof typeof FIVE_ELEMENTS]) }]}>
+                    {baziResult.monthPillar.stem}
+                  </Text>
+                  <Text style={[styles.branchChar, { color: getElementColor(FIVE_ELEMENTS[baziResult.monthPillar.branch as keyof typeof FIVE_ELEMENTS]) }]}>
+                    {baziResult.monthPillar.branch}
+                  </Text>
+                </View>
               </View>
-            </View>
-
-            {/* Day Pillar */}
-            <View style={styles.pillar}>
-              <Text style={styles.pillarLabel}>{i18n.t('baziAnalysis.dayPillar')}</Text>
-              <View style={styles.pillarChars}>
-                <Text style={[styles.stemChar, { color: getElementColor(FIVE_ELEMENTS[baziResult.dayPillar.stem as keyof typeof FIVE_ELEMENTS]) }]}>
-                  {baziResult.dayPillar.stem}
-                </Text>
-                <Text style={[styles.branchChar, { color: getElementColor(FIVE_ELEMENTS[baziResult.dayPillar.branch as keyof typeof FIVE_ELEMENTS]) }]}>
-                  {baziResult.dayPillar.branch}
-                </Text>
+              {/* Day Pillar */}
+              <View style={styles.pillar}>
+                <Text style={styles.pillarLabel}>{i18n.t('baziAnalysis.dayPillar')}</Text>
+                <View style={styles.pillarChars}>
+                  <Text style={[styles.stemChar, { color: getElementColor(FIVE_ELEMENTS[baziResult.dayPillar.stem as keyof typeof FIVE_ELEMENTS]) }]}>
+                    {baziResult.dayPillar.stem}
+                  </Text>
+                  <Text style={[styles.branchChar, { color: getElementColor(FIVE_ELEMENTS[baziResult.dayPillar.branch as keyof typeof FIVE_ELEMENTS]) }]}>
+                    {baziResult.dayPillar.branch}
+                  </Text>
+                </View>
               </View>
-            </View>
-
-            {/* Hour Pillar */}
-            <View style={styles.pillar}>
-              <Text style={styles.pillarLabel}>{i18n.t('baziAnalysis.hourPillar')}</Text>
-              <View style={styles.pillarChars}>
-                <Text style={[styles.stemChar, { color: getElementColor(FIVE_ELEMENTS[baziResult.hourPillar.stem as keyof typeof FIVE_ELEMENTS]) }]}>
-                  {baziResult.hourPillar.stem}
-                </Text>
-                <Text style={[styles.branchChar, { color: getElementColor(FIVE_ELEMENTS[baziResult.hourPillar.branch as keyof typeof FIVE_ELEMENTS]) }]}>
-                  {baziResult.hourPillar.branch}
-                </Text>
+              {/* Hour Pillar */}
+              <View style={styles.pillar}>
+                <Text style={styles.pillarLabel}>{i18n.t('baziAnalysis.hourPillar')}</Text>
+                <View style={styles.pillarChars}>
+                  <Text style={[styles.stemChar, { color: getElementColor(FIVE_ELEMENTS[baziResult.hourPillar.stem as keyof typeof FIVE_ELEMENTS]) }]}>
+                    {baziResult.hourPillar.stem}
+                  </Text>
+                  <Text style={[styles.branchChar, { color: getElementColor(FIVE_ELEMENTS[baziResult.hourPillar.branch as keyof typeof FIVE_ELEMENTS]) }]}>
+                    {baziResult.hourPillar.branch}
+                  </Text>
+                </View>
               </View>
             </View>
           </View>
-        </Card>
+        </View>
 
         {/* Five Elements */}
-        <Card title={i18n.t('baziAnalysis.fiveElements')} style={styles.elementsCard}>
-          <View style={styles.elementsContainer}>
-            {Object.entries(baziResult.elements).map(([element, count]) => (
-              <View key={element} style={styles.elementItem}>
-                <View style={[styles.elementCircle, { backgroundColor: getElementColor(element) }]}>
-                  <Text style={styles.elementChar}>{element}</Text>
-                </View>
-                <Text style={styles.elementName}>
-                  {i18n.t(`baziAnalysis.${element === '木' ? 'wood' : element === '火' ? 'fire' : element === '土' ? 'earth' : element === '金' ? 'metal' : 'water'}`)}
-                </Text>
-                <View style={styles.elementBar}>
-                  <View style={[styles.elementBarFill, { width: `${(count / 8) * 100}%`, backgroundColor: getElementColor(element) }]} />
-                </View>
-                <Text style={styles.elementCount}>{count}</Text>
-              </View>
-            ))}
+        <View style={styles.elementsCard}>
+          <View style={{ marginBottom: SPACING.md, borderBottomWidth: 1, borderBottomColor: '#FFD700', paddingBottom: SPACING.xs }}>
+             <Text style={{ fontSize: FONT_SIZES.lg, fontWeight: 'bold', color: '#FFD700' }}>
+                {i18n.t('baziAnalysis.fiveElements')}
+             </Text>
           </View>
-        </Card>
+          <View style={styles.elementsCardContent}>
+            <View style={styles.elementsContainer}>
+              {Object.entries(baziResult.elements).map(([element, count]) => (
+                <View key={element} style={styles.elementItem}>
+                  <View style={[styles.elementCircle, { backgroundColor: getElementColor(element) }]}>
+                    <Text style={styles.elementChar}>{element}</Text>
+                  </View>
+                  <Text style={styles.elementName}>
+                    {i18n.t(`baziAnalysis.${element === '木' ? 'wood' : element === '火' ? 'fire' : element === '土' ? 'earth' : element === '金' ? 'metal' : 'water'}`)}
+                  </Text>
+                  <View style={styles.elementBar}>
+                    <View style={[styles.elementBarFill, { width: `${(count / 8) * 100}%`, backgroundColor: getElementColor(element) }]} />
+                  </View>
+                  <Text style={styles.elementCount}>{count}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        </View>
 
         {/* Fortune Analysis */}
-        <Card title={i18n.t('baziAnalysis.fortuneAnalysis')} style={styles.fortuneCard}>
-          <View style={styles.fortuneItem}>
-            <Ionicons name="briefcase-outline" size={24} color={COLORS.primary} />
-            <Text style={styles.fortuneLabel}>{i18n.t('baziAnalysis.career')}</Text>
-            <Text style={[styles.fortuneStars, { color: getFortuneLevel(baziResult.elements['金']).color }]}>
-              {getFortuneLevel(baziResult.elements['金']).text}
-            </Text>
+        <View style={styles.fortuneCard}>
+          <View style={{ marginBottom: SPACING.md, borderBottomWidth: 1, borderBottomColor: '#FFD700', paddingBottom: SPACING.xs }}>
+             <Text style={{ fontSize: FONT_SIZES.lg, fontWeight: 'bold', color: '#FFD700' }}>
+                {i18n.t('baziAnalysis.fortuneAnalysis')}
+             </Text>
           </View>
-          <View style={styles.fortuneItem}>
-            <Ionicons name="cash-outline" size={24} color={COLORS.secondary} />
-            <Text style={styles.fortuneLabel}>{i18n.t('baziAnalysis.wealth')}</Text>
-            <Text style={[styles.fortuneStars, { color: getFortuneLevel(baziResult.elements['水']).color }]}>
-              {getFortuneLevel(baziResult.elements['水']).text}
-            </Text>
+          <View style={styles.fortuneCardContent}>
+            <View style={styles.fortuneItem}>
+              <Ionicons name="briefcase-outline" size={24} color={'#4169E1'} />
+              <Text style={styles.fortuneLabel}>{i18n.t('baziAnalysis.career')}</Text>
+              <Text style={[styles.fortuneStars, { color: '#B8860B' }]}>
+                {getFortuneLevel(baziResult.elements['金']).text}
+              </Text>
+            </View>
+            <View style={styles.fortuneItem}>
+              <Ionicons name="cash-outline" size={24} color={'#DAA520'} />
+              <Text style={styles.fortuneLabel}>{i18n.t('baziAnalysis.wealth')}</Text>
+              <Text style={[styles.fortuneStars, { color: '#B8860B' }]}>
+                {getFortuneLevel(baziResult.elements['水']).text}
+              </Text>
+            </View>
+            <View style={styles.fortuneItem}>
+              <Ionicons name="heart-outline" size={24} color={'#2E8B57'} />
+              <Text style={styles.fortuneLabel}>{i18n.t('baziAnalysis.health')}</Text>
+              <Text style={[styles.fortuneStars, { color: '#B8860B' }]}>
+                {getFortuneLevel(baziResult.elements['土']).text}
+              </Text>
+            </View>
+            <View style={styles.fortuneItem}>
+              <Ionicons name="people-outline" size={24} color={'#FF69B4'} />
+              <Text style={styles.fortuneLabel}>{i18n.t('baziAnalysis.relationship')}</Text>
+              <Text style={[styles.fortuneStars, { color: '#B8860B' }]}>
+                {getFortuneLevel(baziResult.elements['火']).text}
+              </Text>
+            </View>
           </View>
-          <View style={styles.fortuneItem}>
-            <Ionicons name="heart-outline" size={24} color={COLORS.error} />
-            <Text style={styles.fortuneLabel}>{i18n.t('baziAnalysis.health')}</Text>
-            <Text style={[styles.fortuneStars, { color: getFortuneLevel(baziResult.elements['土']).color }]}>
-              {getFortuneLevel(baziResult.elements['土']).text}
-            </Text>
-          </View>
-          <View style={styles.fortuneItem}>
-            <Ionicons name="people-outline" size={24} color={COLORS.info} />
-            <Text style={styles.fortuneLabel}>{i18n.t('baziAnalysis.relationship')}</Text>
-            <Text style={[styles.fortuneStars, { color: getFortuneLevel(baziResult.elements['火']).color }]}>
-              {getFortuneLevel(baziResult.elements['火']).text}
-            </Text>
-          </View>
-        </Card>
+        </View>
 
-        {/* Lucky Info */}
-        <Card variant="gold" style={styles.luckyCard}>
-          <View style={styles.luckyItem}>
-            <Ionicons name="compass-outline" size={24} color={COLORS.textPrimary} />
-            <Text style={styles.luckyLabel}>{i18n.t('baziAnalysis.luckyDirection')}</Text>
-            <Text style={styles.luckyValue}>{getDirectionName(baziResult.luckyDirection)}</Text>
-          </View>
-          <View style={styles.luckyItem}>
-            <Ionicons name="color-palette-outline" size={24} color={COLORS.textPrimary} />
-            <Text style={styles.luckyLabel}>{i18n.t('baziAnalysis.luckyColor')}</Text>
-            <Text style={styles.luckyValue}>{getColorName(baziResult.luckyColor)}</Text>
-          </View>
-          <View style={styles.luckyItem}>
-            <Ionicons name="star-outline" size={24} color={COLORS.textPrimary} />
-            <Text style={styles.luckyLabel}>{i18n.t('baziAnalysis.luckyNumber')}</Text>
-            <Text style={styles.luckyValue}>{baziResult.luckyNumbers[0]}</Text>
-          </View>
-        </Card>
+        {/* Lucky Direction */}
+        <View style={styles.luckyCard}>
+           <View style={{ marginBottom: SPACING.md, borderBottomWidth: 1, borderBottomColor: '#FFD700', paddingBottom: SPACING.xs }}>
+             <Text style={{ fontSize: FONT_SIZES.lg, fontWeight: 'bold', color: '#FFD700' }}>
+                {i18n.t('baziAnalysis.luckyDirection')} 
+             </Text>
+           </View>
+           <View style={styles.luckyCardContent}>
+              <View style={styles.luckyItem}>
+                <Ionicons name="compass-outline" size={24} color={'#DAA520'} />
+                <Text style={styles.luckyLabel}>{i18n.t('baziAnalysis.luckyDirection')}</Text>
+                <Text style={[styles.luckyValue, { color: '#C41E3A' }]}>{getDirectionName(baziResult.luckyDirection)}</Text>
+              </View>
+           </View>
+        </View>
+
+        {/* Lucky Colors */}
+        <View style={styles.luckyCard}>
+           <View style={{ marginBottom: SPACING.md, borderBottomWidth: 1, borderBottomColor: '#FFD700', paddingBottom: SPACING.xs }}>
+             <Text style={{ fontSize: FONT_SIZES.lg, fontWeight: 'bold', color: '#FFD700' }}>
+                {i18n.t('baziAnalysis.luckyColors')}
+             </Text>
+           </View>
+           <View style={styles.luckyCardContent}>
+              <View style={styles.luckyItem}>
+                <Ionicons name="color-palette-outline" size={24} color={'#FF4500'} />
+                <Text style={styles.luckyLabel}>{i18n.t('baziAnalysis.luckyColors')}</Text>
+                <View style={{ gap: 4 }}>
+                  {(baziResult.luckyColors || []).map((color: string, index: number) => (
+                    <Text key={index} style={[styles.luckyValue, { color: getLuckyTextColor(color) }]}>
+                      {getColorName(color)}
+                    </Text>
+                  ))}
+                </View>
+              </View>
+           </View>
+        </View>
 
         <View style={styles.bottomSpacer} />
       </ScrollView>

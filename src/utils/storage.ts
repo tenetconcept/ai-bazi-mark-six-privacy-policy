@@ -2,7 +2,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { STORAGE_KEYS } from '../constants/config';
 
 export interface UserData {
-  name: string;
   birthDate: Date;
   birthTime: number; // Hour (0-23)
   birthPlace: string;
@@ -19,7 +18,6 @@ export interface HistoryRecord {
   locationAddress?: string;
   locationLat?: number;
   locationLng?: number;
-  userName: string;
 }
 
 export interface SubscriptionStatus {
@@ -154,6 +152,28 @@ export const formatDate = (date: Date, locale: string = 'zh-TW'): string => {
   }
   
   return date.toLocaleDateString(locale, options);
+};
+
+// Format date with weekday for display
+export const formatDateWithWeekday = (date: Date, locale: string = 'zh-TW'): string => {
+  const weekdays = {
+    'zh-TW': ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'],
+    'zh-CN': ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'],
+    'en': ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+    'fil': ['Linggo', 'Lunes', 'Martes', 'Miyerkules', 'Huwebes', 'Biyernes', 'Sabado'],
+    'th': ['อา.', 'จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.'],
+    'hi': ['रवि', 'सोम', 'मंगल', 'बुध', 'गुरु', 'शुक्र', 'शनि'],
+    'id': ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab']
+  };
+  
+  const dayIndex = date.getDay();
+  const localeKey = Object.keys(weekdays).find(key => locale.startsWith(key.split('-')[0])) || 'en';
+  const weekday = weekdays[localeKey as keyof typeof weekdays][dayIndex];
+  
+  const dateStr = formatDate(date, locale);
+  
+  // All languages: Date (Weekday) format
+  return `${dateStr} (${weekday})`;
 };
 
 // Format time for display

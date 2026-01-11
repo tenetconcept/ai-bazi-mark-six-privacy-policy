@@ -58,6 +58,7 @@ export interface BaziResult {
   luckyNumbers: number[];
   specialNumber: number;
   luckyColor: string;
+  luckyColors: string[]; // Added this array
   luckyDirection: string;
 }
 
@@ -137,6 +138,12 @@ export const calculateBazi = (
     
     // Get lucky color and direction
     const luckyColor = ELEMENT_COLORS[dominantElement][0];
+    // Generate multiple lucky colors (dominant + supporting)
+    const luckyColors = [
+      ELEMENT_COLORS[dominantElement][0], 
+      ELEMENT_COLORS[dominantElement][1] || 'gold',
+      ELEMENT_COLORS['火'][0] // Add a festive default
+    ];
     const luckyDirection = ELEMENT_DIRECTIONS[dominantElement];
     
     return {
@@ -149,6 +156,7 @@ export const calculateBazi = (
       luckyNumbers,
       specialNumber,
       luckyColor,
+      luckyColors,
       luckyDirection,
     };
   } catch (error) {
@@ -226,6 +234,7 @@ const getDefaultBaziResult = (): BaziResult => {
     luckyNumbers: [1, 11, 21, 31, 41, 46],
     specialNumber: 6,
     luckyColor: 'black',
+    luckyColors: ['black', 'blue'],
     luckyDirection: '北',
   };
 };

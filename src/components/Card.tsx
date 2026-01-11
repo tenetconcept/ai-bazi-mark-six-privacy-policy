@@ -1,10 +1,10 @@
 import React from 'react';
-import { View, Text, StyleSheet, ViewStyle } from 'react-native';
+import { View, Text, StyleSheet, ViewStyle, ViewProps } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { getColors, SPACING, BORDER_RADIUS, SHADOWS, FONTS } from '../constants/theme';
 import { useApp } from '../context/AppContext';
 
-interface CardProps {
+interface CardProps extends ViewProps {
   children: React.ReactNode;
   title?: string;
   variant?: 'default' | 'gradient' | 'gold';
@@ -16,6 +16,7 @@ const Card: React.FC<CardProps> = ({
   title,
   variant = 'default',
   style,
+  ...props
 }) => {
   const { isDarkMode } = useApp();
   const COLORS = getColors(isDarkMode);
@@ -59,6 +60,7 @@ const Card: React.FC<CardProps> = ({
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={[styles.gradientCard, style]}
+        {...props}
       >
         {title && <Text style={styles.gradientTitle}>{title}</Text>}
         {children}
@@ -73,6 +75,7 @@ const Card: React.FC<CardProps> = ({
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={[styles.gradientCard, style]}
+        {...props}
       >
         {title && <Text style={styles.goldTitle}>{title}</Text>}
         {children}
@@ -81,7 +84,7 @@ const Card: React.FC<CardProps> = ({
   }
 
   return (
-    <View style={[styles.card, style]}>
+    <View style={[styles.card, style]} {...props}>
       {title && <Text style={styles.title}>{title}</Text>}
       {children}
     </View>

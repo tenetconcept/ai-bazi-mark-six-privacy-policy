@@ -6,6 +6,7 @@ import {
   ViewStyle,
   TextStyle,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { getColors, BORDER_RADIUS, SPACING, FONTS, SHADOWS } from '../constants/theme';
@@ -44,13 +45,18 @@ const CustomButton: React.FC<CustomButtonProps> = ({
       borderWidth: 2,
       borderColor: 'transparent',
       ...SHADOWS.medium,
+      width: '100%',
     },
     gradientText: {
-      color: COLORS.textWhite,
-      fontWeight: 'bold',
+      color: '#FFFFFF', // Reverted to White
+      fontWeight: 'bold', // Reverted to bold
+      // Removed custom Chinese font
+      letterSpacing: 0.5,
+      // Removed text shadow for normal style
     },
     goldText: {
-      color: COLORS.textPrimary,
+      color: '#8B0000', // Deep Dark Red for better contrast on Gold
+      fontWeight: 'bold',
     },
     outlineButton: {
       borderRadius: BORDER_RADIUS.lg,
@@ -201,7 +207,7 @@ const CustomButton: React.FC<CustomButtonProps> = ({
       <LinearGradient
         colors={getGradientColors()}
         start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
+        end={{ x: 0, y: 1 }}
         style={[
           styles.gradientButton,
           {

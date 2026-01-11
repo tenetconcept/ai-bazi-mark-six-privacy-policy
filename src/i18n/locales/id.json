@@ -47,7 +47,9 @@
     "editProfile": "Edit Profil",
     "random": "Acak",
     "drawDatePastError": "Tanggal undian tidak boleh di masa lalu",
-    "operatingHoursNotice": "Waktu yang disarankan disesuaikan berdasarkan jam operasional cabang taruhan"
+    "operatingHoursNotice": "Waktu yang disarankan disesuaikan berdasarkan jam operasional cabang taruhan",
+    "hour": "Jam",
+    "minute": "Menit"
   },
   "places": {
     "hongKong": "Hong Kong",
@@ -112,7 +114,7 @@
     "numbers": "Angka",
     "specialNumber": "Angka Spesial",
     "location": "Lokasi Pembelian",
-    "clearHistory": "Hapus Riwayat",
+    "clearHistory": "Hapus Semua Rekaman",
     "clearConfirm": "Apakah Anda yakin ingin menghapus semua catatan?",
     "confirm": "Konfirmasi",
     "cancel": "Batal",

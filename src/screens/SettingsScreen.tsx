@@ -5,22 +5,23 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Alert,
   Modal,
   Platform,
   Switch,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import AnimatedBanner from '../components/AnimatedBanner';
 import { Ionicons } from '@expo/vector-icons';
 
 import { getColors, SPACING, BORDER_RADIUS, FONTS, SHADOWS, getFontSizes } from '../constants/theme';
-import { Card, CustomButton, AdBanner } from '../components';
+import { Card, CustomButton, AdBanner, CustomAlert } from '../components';
 import { APP_VERSION, SUBSCRIPTION_PRODUCTS } from '../constants/config';
 import { clearUserData, saveSubscriptionStatus } from '../utils/storage';
 import i18n, { LANGUAGES, setLanguage } from '../i18n';
 import { useApp } from '../context/AppContext';
 import { FontSize } from '../context/AppContext';
+import { useCustomAlert } from '../utils/useCustomAlert';
 
 const SettingsScreen: React.FC = () => {
   const { language, changeLanguage, isSubscribed, subscriptionPlan, updateSubscription, triggerUserDataReload, isDarkMode, toggleTheme, fontSize, changeFontSize } = useApp();
@@ -29,6 +30,7 @@ const SettingsScreen: React.FC = () => {
   const [showLanguageModal, setShowLanguageModal] = useState(false);
   const [showFontSizeModal, setShowFontSizeModal] = useState(false);
   const [showInfoModal, setShowInfoModal] = useState<string | null>(null);
+  const { alertState, showAlert, hideAlert } = useCustomAlert();
 
   const styles = StyleSheet.create({
     container: {
@@ -36,16 +38,26 @@ const SettingsScreen: React.FC = () => {
       backgroundColor: COLORS.background,
     },
     header: {
-      paddingTop: 60,
-      paddingBottom: SPACING.xl,
+      paddingTop: 30,
+      paddingBottom: SPACING.sm,
       borderBottomLeftRadius: BORDER_RADIUS.xxl,
       borderBottomRightRadius: BORDER_RADIUS.xxl,
+      borderBottomWidth: 3,
+      borderBottomColor: 'rgba(255, 215, 0, 0.3)',
+      shadowColor: '#FFD700',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 8,
+      elevation: 8,
     },
     headerTitle: {
       fontSize: FONT_SIZES.xxl,
       fontWeight: 'bold',
-      color: COLORS.textWhite,
+      color: '#FFD700', // Shiny Gold
       textAlign: 'center',
+      textShadowColor: '#B8860B',
+      textShadowOffset: { width: 2, height: 2 },
+      textShadowRadius: 4,
     },
     scrollView: {
       flex: 1,
@@ -55,11 +67,24 @@ const SettingsScreen: React.FC = () => {
     },
     subscriptionCard: {
       marginBottom: SPACING.lg,
+      backgroundColor: COLORS.cardInnerBackground,
+      borderWidth: 1,
+      borderColor: '#FFD700',
+      borderRadius: BORDER_RADIUS.lg,
+      padding: SPACING.lg,
+      shadowColor: "#000",
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.23,
+      shadowRadius: 2.62,
+      elevation: 4,
     },
     sectionTitle: {
       fontSize: FONT_SIZES.lg,
       fontWeight: 'bold',
-      color: COLORS.textPrimary,
+      color: COLORS.textBrand,
       marginBottom: SPACING.md,
     },
     currentPlanContainer: {
@@ -68,7 +93,7 @@ const SettingsScreen: React.FC = () => {
       alignItems: 'center',
       paddingVertical: SPACING.md,
       borderBottomWidth: 1,
-      borderBottomColor: COLORS.borderLight,
+      borderBottomColor: 'rgba(255, 215, 0, 0.3)',
       marginBottom: SPACING.md,
     },
     currentPlanLabel: {
@@ -129,6 +154,19 @@ const SettingsScreen: React.FC = () => {
     },
     settingsCard: {
       marginBottom: SPACING.lg,
+      backgroundColor: COLORS.cardInnerBackground,
+      borderWidth: 1,
+      borderColor: '#FFD700',
+      borderRadius: BORDER_RADIUS.lg,
+      overflow: 'hidden',
+      shadowColor: "#000",
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.23,
+      shadowRadius: 2.62,
+      elevation: 4,
     },
     settingItem: {
       flexDirection: 'row',
@@ -136,13 +174,13 @@ const SettingsScreen: React.FC = () => {
       paddingVertical: SPACING.md,
       paddingHorizontal: SPACING.lg,
       borderBottomWidth: 1,
-      borderBottomColor: COLORS.borderLight,
+      borderBottomColor: 'rgba(255, 215, 0, 0.3)',
     },
     settingIcon: {
       width: 32,
       height: 32,
       borderRadius: BORDER_RADIUS.sm,
-      backgroundColor: COLORS.backgroundDark,
+      backgroundColor: isDarkMode ? 'rgba(255, 215, 0, 0.15)' : 'rgba(212, 175, 55, 0.15)',
       justifyContent: 'center',
       alignItems: 'center',
       marginRight: SPACING.md,
@@ -153,7 +191,7 @@ const SettingsScreen: React.FC = () => {
     settingTitle: {
       fontSize: FONT_SIZES.md,
       fontWeight: '600',
-      color: COLORS.textPrimary,
+      color: COLORS.textBrand,
     },
     settingSubtitle: {
       fontSize: FONT_SIZES.sm,
@@ -176,15 +214,19 @@ const SettingsScreen: React.FC = () => {
     modalContent: {
       width: '80%',
       maxHeight: '70%',
-      backgroundColor: COLORS.backgroundCard,
+      backgroundColor: COLORS.cardInnerBackground,
       borderRadius: BORDER_RADIUS.xl,
+      borderWidth: 1,
+      borderColor: '#FFD700',
       padding: SPACING.lg,
     },
     infoModalContent: {
       width: '90%',
       maxHeight: '80%',
-      backgroundColor: COLORS.backgroundCard,
+      backgroundColor: COLORS.cardInnerBackground,
       borderRadius: BORDER_RADIUS.xl,
+      borderWidth: 1,
+      borderColor: '#FFD700',
       padding: SPACING.lg,
     },
     modalHeader: {
@@ -194,12 +236,12 @@ const SettingsScreen: React.FC = () => {
       marginBottom: SPACING.lg,
       paddingBottom: SPACING.md,
       borderBottomWidth: 1,
-      borderBottomColor: COLORS.borderLight,
+      borderBottomColor: 'rgba(255, 215, 0, 0.3)',
     },
     modalTitle: {
       fontSize: FONT_SIZES.xl,
       fontWeight: 'bold',
-      color: COLORS.textPrimary,
+      color: COLORS.textBrand,
     },
     languageOption: {
       flexDirection: 'row',
@@ -211,11 +253,11 @@ const SettingsScreen: React.FC = () => {
       marginBottom: SPACING.sm,
     },
     languageOptionActive: {
-      backgroundColor: COLORS.backgroundDark,
+      backgroundColor: isDarkMode ? 'rgba(255, 215, 0, 0.2)' : 'rgba(212, 175, 55, 0.2)',
     },
     languageText: {
       fontSize: FONT_SIZES.lg,
-      color: COLORS.textPrimary,
+      color: COLORS.textBrand,
     },
     languageTextActive: {
       fontWeight: 'bold',
@@ -226,7 +268,7 @@ const SettingsScreen: React.FC = () => {
     },
     infoText: {
       fontSize: FONT_SIZES.md,
-      color: COLORS.textPrimary,
+      color: COLORS.textBrand,
       lineHeight: 24,
     },
   });
@@ -263,10 +305,10 @@ const SettingsScreen: React.FC = () => {
 
   const handleSubscribe = async (plan: 'monthly' | 'yearly') => {
     // In production, implement actual in-app purchase
-    Alert.alert(
-      i18n.t('settings.subscribe'),
-      `${plan === 'monthly' ? i18n.t('settings.monthlyPlan') : i18n.t('settings.yearlyPlan')}`,
-      [
+    showAlert({
+      title: i18n.t('settings.subscribe'),
+      message: `${plan === 'monthly' ? i18n.t('settings.monthlyPlan') : i18n.t('settings.yearlyPlan')}`,
+      buttons: [
         { text: i18n.t('common.cancel'), style: 'cancel' },
         {
           text: i18n.t('settings.subscribe'),
@@ -278,20 +320,30 @@ const SettingsScreen: React.FC = () => {
               expiryDate: new Date(Date.now() + (plan === 'monthly' ? 30 : 365) * 24 * 60 * 60 * 1000).toISOString(),
             });
             updateSubscription({ isSubscribed: true, plan });
-            Alert.alert('', i18n.t('settings.purchaseStatus') + ': ' + (plan === 'monthly' ? i18n.t('settings.monthlyPlan') : i18n.t('settings.yearlyPlan')));
+            showAlert({
+              message: i18n.t('settings.purchaseStatus') + ': ' + (plan === 'monthly' ? i18n.t('settings.monthlyPlan') : i18n.t('settings.yearlyPlan')),
+            });
           },
         },
-      ]
-    );
+      ],
+    });
   };
 
   const handleRestorePurchase = async () => {
     // In production, implement actual restore purchase
-    Alert.alert(
-      i18n.t('settings.restorePurchase'),
-      'Checking for previous purchases...',
-      [{ text: i18n.t('common.ok') }]
-    );
+    showAlert({
+      title: i18n.t('settings.restorePurchase'),
+      message: 'Checking for previous purchases...',
+    });
+  };
+
+  const handleThemeToggleDelayed = () => {
+    // Small delay to allow the switch animation to complete smoothly before the theme swap
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        toggleTheme();
+      }, 50); // 50ms is enough to let the native switch start moving
+    });
   };
 
   const handleLanguageChange = async (code: string) => {
@@ -300,10 +352,10 @@ const SettingsScreen: React.FC = () => {
   };
 
   const handleResetData = () => {
-    Alert.alert(
-      i18n.t('settings.resetAllData'),
-      i18n.t('settings.resetAllDataConfirm'),
-      [
+    showAlert({
+      title: i18n.t('settings.resetAllData'),
+      message: i18n.t('settings.resetAllDataConfirm'),
+      buttons: [
         { text: i18n.t('common.cancel'), style: 'cancel' },
         {
           text: i18n.t('common.confirm'),
@@ -317,19 +369,26 @@ const SettingsScreen: React.FC = () => {
               // Trigger data reload first
               triggerUserDataReload();
               
-              // Show success message
-              Alert.alert(
-                i18n.t('common.success'),
-                i18n.t('settings.resetComplete')
-              );
+              // Delay showing success message to avoid flickering
+              setTimeout(() => {
+                showAlert({
+                  title: i18n.t('common.success'),
+                  message: i18n.t('settings.resetComplete'),
+                });
+              }, 400); // Wait for previous alert to fully dismiss
             } catch (error) {
               console.error('Reset error:', error);
-              Alert.alert(i18n.t('common.error'), i18n.t('settings.resetError'));
+              setTimeout(() => {
+                showAlert({
+                  title: i18n.t('common.error'),
+                  message: i18n.t('settings.resetError'),
+                });
+              }, 400);
             }
           },
         },
-      ]
-    );
+      ],
+    });
   };
 
   const getCurrentLanguageName = (): string => {
@@ -355,12 +414,12 @@ const SettingsScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.container} edges={[]}>
       {/* Header */}
-      <LinearGradient
+      <AnimatedBanner
         colors={[COLORS.gradientStart, COLORS.gradientEnd]}
         style={styles.header}
       >
         <Text style={styles.headerTitle}>{i18n.t('settings.title')}</Text>
-      </LinearGradient>
+      </AnimatedBanner>
 
       <ScrollView
         style={styles.scrollView}
@@ -368,7 +427,7 @@ const SettingsScreen: React.FC = () => {
         showsVerticalScrollIndicator={false}
       >
         {/* Subscription Section */}
-        <Card style={styles.subscriptionCard}>
+        <View style={styles.subscriptionCard}>
           <Text style={styles.sectionTitle}>{i18n.t('settings.subscription')}</Text>
           
           <View style={styles.currentPlanContainer}>
@@ -422,24 +481,26 @@ const SettingsScreen: React.FC = () => {
             </>
           )}
 
-          <TouchableOpacity style={styles.restoreButton} onPress={handleRestorePurchase}>
-            <Text style={styles.restoreText}>{i18n.t('settings.restorePurchase')}</Text>
-          </TouchableOpacity>
-        </Card>
+          {!isSubscribed && (
+            <TouchableOpacity style={styles.restoreButton} onPress={handleRestorePurchase}>
+              <Text style={styles.restoreText}>{i18n.t('settings.restorePurchase')}</Text>
+            </TouchableOpacity>
+          )}
+        </View>
 
         {/* Settings List */}
-        <Card style={styles.settingsCard}>
+        <View style={styles.settingsCard}>
           <SettingItem
             icon="moon-outline"
             title={i18n.t('settings.darkMode')}
-            onPress={toggleTheme}
+            onPress={() => {}}
             rightComponent={
               <Switch
                 value={isDarkMode}
-                onValueChange={toggleTheme}
-                trackColor={{ false: COLORS.textLight, true: COLORS.primary }}
+                onValueChange={handleThemeToggleDelayed}
+                trackColor={{ false: '#767577', true: '#C41E3A' }}
                 thumbColor={Platform.OS === 'ios' ? undefined : '#FFFFFF'}
-                ios_backgroundColor={COLORS.textLight}
+                ios_backgroundColor="#767577"
               />
             }
           />
@@ -460,9 +521,9 @@ const SettingsScreen: React.FC = () => {
             title={i18n.t('settings.resetAllData')}
             onPress={handleResetData}
           />
-        </Card>
+        </View>
 
-        <Card style={styles.settingsCard}>
+        <View style={styles.settingsCard}>
           <SettingItem
             icon="warning-outline"
             title={i18n.t('settings.disclaimer')}
@@ -483,9 +544,9 @@ const SettingsScreen: React.FC = () => {
             title={i18n.t('settings.howToPlay')}
             onPress={() => setShowInfoModal('howToPlay')}
           />
-        </Card>
+        </View>
 
-        <Card style={styles.settingsCard}>
+        <View style={styles.settingsCard}>
           <SettingItem
             icon="information-circle-outline"
             title={i18n.t('settings.appVersion')}
@@ -493,7 +554,7 @@ const SettingsScreen: React.FC = () => {
             onPress={() => {}}
             showArrow={false}
           />
-        </Card>
+        </View>
 
         <View style={styles.bottomSpacer} />
       </ScrollView>
@@ -611,6 +672,17 @@ const SettingsScreen: React.FC = () => {
 
       {/* Ad Banner */}
       {!isSubscribed && <AdBanner position="bottom" adType="historyBanner" />}
+      
+      {/* Custom Alert */}
+      <CustomAlert
+        visible={alertState.visible}
+        title={alertState.title}
+        message={alertState.message}
+        buttons={alertState.buttons}
+        onDismiss={hideAlert}
+        isDarkMode={isDarkMode}
+        fontSize={fontSize}
+      />
     </SafeAreaView>
   );
 };

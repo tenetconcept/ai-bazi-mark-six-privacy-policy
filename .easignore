@@ -1,0 +1,43 @@
+# Development scripts and store assets (not needed in app bundle)
+dev_scripts/
+
+# Build outputs (should not be included)
+dist/
+web-build/
+
+# Expo local cache
+.expo/
+
+# Python files (development only)
+*.py
+__pycache__/
+
+# Documentation
+*.md
+!README.md
+
+# Git files
+.git/
+.gitignore
+
+# IDE settings
+.vscode/
+.idea/
+
+# Test files
+__tests__/
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+
+# Source maps (reduces size)
+*.map
+
+# Misc development files
+*.log
+*.tmp
+*.bak
+
+# Privacy policy HTML (not needed in app)
+privacy-policy.html

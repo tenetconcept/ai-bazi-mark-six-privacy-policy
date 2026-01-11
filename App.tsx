@@ -5,12 +5,16 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { View, StyleSheet, ActivityIndicator, Modal, Text, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFonts, MaShanZheng_400Regular } from '@expo-google-fonts/ma-shan-zheng';
+import Animated, { FadeIn, FadeInDown, FadeInUp } from 'react-native-reanimated';
 
 import { AppProvider, useApp } from './src/context/AppContext';
 import { TabNavigator } from './src/navigation';
-import { COLORS, SPACING, FONTS, BORDER_RADIUS } from './src/constants/theme';
+import { COLORS, getColors, SPACING, FONTS, BORDER_RADIUS } from './src/constants/theme';
+import IntroAnimation from './src/components/IntroAnimation';
 import i18n from './src/i18n';
 import { loadUserData } from './src/utils/storage';
+import { DefaultTheme, DarkTheme } from '@react-navigation/native';
 
 const DISCLAIMER_KEY = '@disclaimer_accepted';
 
@@ -21,13 +25,35 @@ const LoadingScreen: React.FC = () => (
 );
 
 const AppContent: React.FC = () => {
+  const { isDarkMode } = useApp();
+  const COLORS = getColors(isDarkMode);
   const [isCheckingDisclaimer, setIsCheckingDisclaimer] = useState(true);
   const [showDisclaimer, setShowDisclaimer] = useState(false);
   const [disclaimerChecked, setDisclaimerChecked] = useState(false);
   const [shouldShowUserModal, setShouldShowUserModal] = useState(false);
+  const [showIntro, setShowIntro] = useState(true);
+
+  const navigationTheme = {
+    dark: isDarkMode,
+    colors: {
+      ...(isDarkMode ? DarkTheme.colors : DefaultTheme.colors),
+      primary: COLORS.primary,
+      background: COLORS.background,
+      card: COLORS.tabBarBackground,
+      text: COLORS.textPrimary,
+      border: COLORS.border,
+      notification: COLORS.primary,
+    },
+    fonts: isDarkMode ? DarkTheme.fonts : DefaultTheme.fonts,
+  };
 
   useEffect(() => {
     checkDisclaimer();
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowIntro(false), 2500);
+    return () => clearTimeout(timer);
   }, []);
 
   const checkDisclaimer = async () => {
@@ -75,7 +101,7 @@ const AppContent: React.FC = () => {
 
   return (
     <>
-      <StatusBar style="dark" />
+      <StatusBar style="light" />
       {showDisclaimer ? (
         <Modal
           visible={true}
@@ -122,17 +148,35 @@ const AppContent: React.FC = () => {
           </View>
         </Modal>
       ) : (
-        <NavigationContainer>
-          <TabNavigator shouldShowUserModal={shouldShowUserModal} />
-        </NavigationContainer>
+        <Animated.View 
+          style={{ flex: 1 }} 
+          entering={FadeInDown.duration(600).delay(200)}
+        >
+          <NavigationContainer theme={navigationTheme}>
+            <TabNavigator shouldShowUserModal={shouldShowUserModal} />
+          </NavigationContainer>
+        </Animated.View>
       )}
+      <IntroAnimation visible={showIntro} />
     </>
   );
 };
 
 export default function App() {
+  const [fontsLoaded] = useFonts({
+    MaShanZheng_400Regular,
+  });
+
+  if (!fontsLoaded) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </View>
+    );
+  }
+
   return (
-    <GestureHandlerRootView style={styles.container}>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#000000' }}>
       <SafeAreaProvider>
         <AppProvider>
           <AppContent />
@@ -145,13 +189,12 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.background,
   },
   disclaimerOverlay: {
     flex: 1,
@@ -178,7 +221,6 @@ const styles = StyleSheet.create({
     color: '#C41E3A',
     textAlign: 'center',
     marginBottom: SPACING.lg,
-    fontFamily: FONTS.bold,
   },
   disclaimerScroll: {
     maxHeight: 400,
@@ -188,7 +230,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 24,
     color: '#1A1A1A',
-    fontFamily: FONTS.regular,
   },
   checkboxContainer: {
     flexDirection: 'row',
@@ -220,7 +261,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 15,
     color: '#1A1A1A',
-    fontFamily: FONTS.medium,
   },
   acceptButton: {
     backgroundColor: '#C41E3A',
@@ -236,6 +276,5 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
-    fontFamily: FONTS.bold,
   },
 });

@@ -6,26 +6,110 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
-  Alert,
   Platform,
   KeyboardAvoidingView,
   Modal,
+  Animated,
+  Easing,
+  Dimensions,
+  FlatList,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import AnimatedBanner from '../components/AnimatedBanner';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import { Ionicons } from '@expo/vector-icons';
 
 import { getColors, SPACING, BORDER_RADIUS, FONTS, SHADOWS, getFontSizes } from '../constants/theme';
 import { BIRTH_PLACES, PURCHASE_LOCATIONS, getValidPurchaseTime } from '../constants/config';
-import { LotteryBall, CustomButton, Card, AdBanner, RotatingLogo } from '../components';
+import { LotteryBall, CustomButton, Card, AdBanner, RotatingLogo, CustomAlert } from '../components';
 import { calculateBazi } from '../utils/baziCalculator';
 import { fetchMarkSixDrawDates, getNextDrawDateFallback, getPreviousDrawDateFallback } from '../utils/markSixApi';
-import { saveUserData, loadUserData, saveHistory, generateId, formatDate, formatTime, UserData } from '../utils/storage';
+import { saveUserData, loadUserData, saveHistory, generateId, formatDate, formatDateWithWeekday, formatTime, UserData } from '../utils/storage';
 import i18n from '../i18n';
 import { useApp } from '../context/AppContext';
 import { useRoute } from '@react-navigation/native';
+import { useCustomAlert } from '../utils/useCustomAlert';
+
+const GlowingIcon = () => {
+  const glowAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(glowAnim, {
+          toValue: 1,
+          duration: 1000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(glowAnim, {
+          toValue: 0,
+          duration: 1000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
+
+  const opacity = glowAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.5, 1],
+  });
+
+  return (
+    <Animated.View style={{ opacity, marginRight: 8 }}>
+      <Ionicons name="megaphone" size={16} color="#FFD700" />
+    </Animated.View>
+  );
+};
+
+const MarqueeText = ({ text, style }: { text: string; style?: any }) => {
+  const animatedValue = useRef(new Animated.Value(0)).current;
+  const [textWidth, setTextWidth] = useState(0);
+  const containerWidth = Dimensions.get('window').width - 80;
+  
+  // Create repeated text with larger spacing
+  const repeatedText = `${text}          ${text}          ${text}`;
+
+  useEffect(() => {
+    if (textWidth > 0) {
+      // Calculate the distance for one complete cycle (one text + spacing)
+      const singleTextWidth = textWidth / 3; // Since we have 3 copies
+      animatedValue.setValue(containerWidth);
+      Animated.loop(
+        Animated.timing(animatedValue, {
+          toValue: -singleTextWidth,
+          duration: 12000 + (singleTextWidth * 25), // Slower speed (was 8000 + 15)
+          easing: Easing.linear,
+          useNativeDriver: true,
+        })
+      ).start();
+    }
+  }, [textWidth, text]);
+
+  return (
+    <View style={{ flex: 1, overflow: 'hidden', height: 30, justifyContent: 'center' }}>
+      <Animated.Text 
+        style={[
+          style, 
+          { 
+            transform: [{ translateX: animatedValue }], 
+            position: 'absolute',
+            width: 2000 // Larger width to accommodate repeated text
+          }
+        ]}
+        onLayout={(e) => setTextWidth(e.nativeEvent.layout.width)}
+        numberOfLines={1}
+        ellipsizeMode="clip"
+      >
+        {repeatedText}
+      </Animated.Text>
+    </View>
+  );
+};
 
 const LuckyNumbersScreen: React.FC = () => {
   const { language, isSubscribed, userDataVersion, triggerUserDataReload, isDarkMode, fontSize, incrementGenerationCount } = useApp();
@@ -33,6 +117,7 @@ const LuckyNumbersScreen: React.FC = () => {
   const routeParams = route.params as { shouldShowUserModal?: boolean } | undefined;
   const COLORS = getColors(isDarkMode);
   const FONT_SIZES = getFontSizes(fontSize);
+  const { alertState, showAlert, hideAlert } = useCustomAlert();
 
   const styles = StyleSheet.create({
     container: {
@@ -43,11 +128,18 @@ const LuckyNumbersScreen: React.FC = () => {
       flex: 1,
     },
     header: {
-      paddingTop: 60,
+      paddingTop: 30,
       paddingHorizontal: SPACING.lg,
-      paddingBottom: SPACING.xl,
+      paddingBottom: SPACING.sm,
       borderBottomLeftRadius: BORDER_RADIUS.xxl,
       borderBottomRightRadius: BORDER_RADIUS.xxl,
+      borderBottomWidth: 3,
+      borderBottomColor: 'rgba(255, 215, 0, 0.3)',
+      shadowColor: '#FFD700',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 8,
+      elevation: 8,
     },
     headerContent: {
       flexDirection: 'row',
@@ -57,15 +149,13 @@ const LuckyNumbersScreen: React.FC = () => {
     headerTitleContainer: {
       alignItems: 'center',
     },
-    editProfileButtonContainer: {
-      marginTop: 1,
-      marginBottom: SPACING.xxl + SPACING.sm,
-      width: '100%',
-      maxWidth: 600,
+    editProfileButtonContainer: { // Deprecated but keeping for reference if needed, can remove
+      marginTop: -20,
+      marginBottom: SPACING.xl,
       alignSelf: 'center',
     },
     editProfileButton: {
-      width: '100%',
+      width: 'auto',
     },
     logoContainer: {
       marginRight: SPACING.md,
@@ -105,9 +195,9 @@ const LuckyNumbersScreen: React.FC = () => {
     },
     scrollContent: {
       padding: SPACING.lg,
-      paddingTop: 0,
-      paddingBottom: 0,
-      justifyContent: 'center',
+      paddingTop: SPACING.xxxl * 2,
+      paddingBottom: 300,
+      justifyContent: 'flex-start',
       flexGrow: 1,
     },
     formCard: {
@@ -115,40 +205,53 @@ const LuckyNumbersScreen: React.FC = () => {
       alignSelf: 'center',
       width: '100%',
       maxWidth: 600,
+      backgroundColor: COLORS.primary,
+      borderWidth: 2,
+      borderColor: '#FFD700', // Gold Border
+      shadowColor: '#C41E3A',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 8,
+      elevation: 8,
+      padding: SPACING.md,
     },
     inputGroup: {
-      marginBottom: SPACING.lg,
+      marginBottom: SPACING.md,
     },
     label: {
       fontSize: FONT_SIZES.md,
-      fontWeight: '600',
-      color: COLORS.textPrimary,
+      fontWeight: 'bold',
+      color: '#FFD700', // Gold Text
       marginBottom: SPACING.sm,
+      textShadowColor: 'rgba(0,0,0,0.3)',
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 1,
     },
     textInput: {
-      backgroundColor: COLORS.backgroundDark,
+      backgroundColor: COLORS.cardInnerBackground,
       borderRadius: BORDER_RADIUS.md,
       paddingHorizontal: SPACING.md,
-      paddingVertical: SPACING.md,
+      paddingVertical: SPACING.sm,
       fontSize: FONT_SIZES.md,
-      color: COLORS.textPrimary,
+      color: COLORS.textBrand,
       borderWidth: 1,
-      borderColor: COLORS.border,
+      borderColor: '#FFD700',
     },
     pickerButton: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      backgroundColor: COLORS.backgroundDark,
+      backgroundColor: COLORS.cardInnerBackground, // Cream/Light Gold
       borderRadius: BORDER_RADIUS.md,
       paddingHorizontal: SPACING.md,
-      paddingVertical: SPACING.md,
+      paddingVertical: SPACING.sm,
       borderWidth: 1,
-      borderColor: COLORS.border,
+      borderColor: '#FFD700',
     },
     pickerText: {
       fontSize: FONT_SIZES.md,
-      color: COLORS.textPrimary,
+      fontWeight: '600',
+      color: COLORS.textBrand,
     },
     confirmButton: {
       marginTop: SPACING.md,
@@ -182,39 +285,63 @@ const LuckyNumbersScreen: React.FC = () => {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: SPACING.md,
-      borderRadius: BORDER_RADIUS.md,
+      paddingVertical: SPACING.md,
+      paddingHorizontal: SPACING.sm,
+      borderRadius: BORDER_RADIUS.lg,
       borderWidth: 2,
-      borderColor: COLORS.primary,
-      backgroundColor: COLORS.backgroundCard,
       gap: SPACING.xs,
     },
+    genderButtonMale: {
+      borderColor: '#4A90E2',
+      backgroundColor: 'rgba(74, 144, 226, 0.1)',
+    },
+    genderButtonFemale: {
+      borderColor: '#E91E63',
+      backgroundColor: 'rgba(233, 30, 99, 0.1)',
+    },
     genderButtonActive: {
-      backgroundColor: COLORS.primary,
-      borderColor: COLORS.primary,
+      backgroundColor: COLORS.secondary,
+      borderColor: COLORS.secondary,
     },
     genderButtonText: {
       fontSize: FONT_SIZES.md,
       fontWeight: '600',
-      color: COLORS.primary,
+    },
+    genderButtonTextMale: {
+      color: '#4A90E2',
+    },
+    genderButtonTextFemale: {
+      color: '#E91E63',
     },
     genderButtonTextActive: {
-      color: COLORS.textWhite,
+      color: COLORS.textPrimary,
     },
     generateButton: {
       marginTop: SPACING.md,
-      marginBottom: SPACING.xxl,
+      marginBottom: 0,
     },
     resultsCard: {
-      marginTop: SPACING.xl,
+      marginTop: 120,
       marginBottom: SPACING.lg,
+      borderWidth: 2,
+      borderColor: '#FFD700', // Gold Border
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 4.65,
+      elevation: 8,
     },
     resultsTitle: {
       fontSize: FONT_SIZES.lg,
-      fontWeight: 'bold',
-      color: COLORS.textWhite,
+      // Removed fontWeight: 'bold' to ensure MaShanZheng renders correctly
+      color: '#FFD700', // Gold
       textAlign: 'center',
       marginBottom: SPACING.lg,
+      fontWeight: 'bold',
+      textShadowColor: 'rgba(0, 0, 0, 0.3)',
+      textShadowOffset: { width: 1, height: 1 },
+      textShadowRadius: 2,
+      letterSpacing: 1,
     },
     numbersContainer: {
       flexDirection: 'row',
@@ -313,20 +440,23 @@ const LuckyNumbersScreen: React.FC = () => {
     modalOverlay: {
       flex: 1,
       backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      justifyContent: 'flex-end',
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: SPACING.lg,
     },
     modalContent: {
       backgroundColor: COLORS.background,
-      borderTopLeftRadius: BORDER_RADIUS.xxl,
-      borderTopRightRadius: BORDER_RADIUS.xxl,
-      maxHeight: '95%',
+      borderRadius: BORDER_RADIUS.xxl,
+      width: '88%',
+      maxWidth: 480,
+      maxHeight: '70%',
       ...SHADOWS.large,
     },
     modalHeader: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      padding: SPACING.lg,
+      padding: SPACING.md,
       borderBottomWidth: 1,
       borderBottomColor: COLORS.backgroundDark,
     },
@@ -336,16 +466,19 @@ const LuckyNumbersScreen: React.FC = () => {
       color: COLORS.textPrimary,
     },
     modalBody: {
-      padding: SPACING.lg,
+    },
+    modalBodyContent: {
+      padding: SPACING.md,
+      paddingBottom: SPACING.md,
     },
     privacyNotice: {
       flexDirection: 'row',
       alignItems: 'center',
       backgroundColor: COLORS.backgroundDark,
-      padding: SPACING.md,
+      padding: SPACING.sm,
       borderRadius: BORDER_RADIUS.md,
-      marginBottom: SPACING.lg,
-      gap: SPACING.sm,
+      marginBottom: SPACING.md,
+      gap: SPACING.xs,
     },
     privacyText: {
       flex: 1,
@@ -354,7 +487,7 @@ const LuckyNumbersScreen: React.FC = () => {
       lineHeight: 20,
     },
     modalInputGroup: {
-      marginBottom: SPACING.lg,
+      marginBottom: SPACING.md,
     },
     modalField: {
       marginBottom: SPACING.lg,
@@ -399,8 +532,10 @@ const LuckyNumbersScreen: React.FC = () => {
     },
     modalFooter: {
       flexDirection: 'row',
-      padding: SPACING.lg,
-      gap: SPACING.md,
+      padding: SPACING.md,
+      paddingTop: SPACING.lg,
+      paddingBottom: SPACING.ld,
+      gap: SPACING.xs,
       borderTopWidth: 1,
       borderTopColor: COLORS.backgroundDark,
     },
@@ -423,7 +558,7 @@ const LuckyNumbersScreen: React.FC = () => {
       borderRadius: BORDER_RADIUS.xxl,
       padding: SPACING.lg,
       width: '90%',
-      maxHeight: '50%',
+      maxWidth: 400,
     },
     pickerModalHeader: {
       flexDirection: 'row',
@@ -438,18 +573,20 @@ const LuckyNumbersScreen: React.FC = () => {
     },
   });
 
-  const [name, setName] = useState('');
   const [birthDate, setBirthDate] = useState(new Date(1990, 0, 1));
   const [birthTime, setBirthTime] = useState(12);
+  const [birthMinute, setBirthMinute] = useState(0);
   const [birthPlace, setBirthPlace] = useState('Asia/Hong_Kong');
-  const [gender, setGender] = useState<'male' | 'female'>('male');
+  const [gender, setGender] = useState<'male' | 'female' | null>(null);
   const [drawDate, setDrawDate] = useState(new Date()); // 攪珠日期
   const [drawTime] = useState(21.5); // 攪珠時間 21:30 (固定)
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
+  const [showMinutePicker, setShowMinutePicker] = useState(false);
   const [showDrawDatePicker, setShowDrawDatePicker] = useState(false);
   const [tempDate, setTempDate] = useState(new Date(1990, 0, 1));
   const [tempTime, setTempTime] = useState(12);
+  const [tempMinute, setTempMinute] = useState(0);
   const [tempPlace, setTempPlace] = useState('Asia/Hong_Kong');
   const [tempDrawDate, setTempDrawDate] = useState(new Date());
   const [showPlacePicker, setShowPlacePicker] = useState(false);
@@ -467,7 +604,29 @@ const LuckyNumbersScreen: React.FC = () => {
   const [nextDrawDate, setNextDrawDate] = useState<Date | null>(null);
   const [nextDrawNumber, setNextDrawNumber] = useState<string | null>(null);
   const [drawFetchFailed, setDrawFetchFailed] = useState(false);
+  const [resultsCardY, setResultsCardY] = useState(0);
+  const [resultsCardHeight, setResultsCardHeight] = useState(0);
+  const [scrollViewHeight, setScrollViewHeight] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
+  const buttonAnim = useRef(new Animated.Value(1)).current;
+
+  // Blinking animation for Generate button
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(buttonAnim, {
+          toValue: 0.8,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+        Animated.timing(buttonAnim, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
 
   // Fetch Mark Six draw dates on mount
   useEffect(() => {
@@ -518,7 +677,6 @@ const LuckyNumbersScreen: React.FC = () => {
     const loadData = async () => {
       const userData = await loadUserData();
       if (userData) {
-        setName(userData.name);
         setBirthDate(userData.birthDate);
         setBirthTime(userData.birthTime);
         setTempTime(userData.birthTime); // Sync tempTime with birthTime
@@ -553,18 +711,18 @@ const LuckyNumbersScreen: React.FC = () => {
         
         setBirthPlace(migratedBirthPlace);
         setTempPlace(migratedBirthPlace); // Sync tempPlace with birthPlace
-        setGender(userData.gender || 'male');
+        setGender(userData.gender || null);
         setHasDataSaved(true);
       } else {
-        // Reset to defaults (use today's date to match hasUserData logic)
-        const today = new Date();
-        setName('');
-        setBirthDate(today);
+        // Reset to defaults (use 18 years ago as default birth date for age restriction)
+        const defaultDate = new Date();
+        defaultDate.setFullYear(defaultDate.getFullYear() - 18);
+        setBirthDate(defaultDate);
         setBirthTime(12);
         setTempTime(12);
         setBirthPlace('Asia/Hong_Kong');
         setTempPlace('Asia/Hong_Kong');
-        setGender('male');
+        setGender(null);
         setHasDataSaved(false);
         setHasGenerated(false);
         setLuckyNumbers([]);
@@ -587,12 +745,32 @@ const LuckyNumbersScreen: React.FC = () => {
 
   // Auto-scroll to results when generated
   useEffect(() => {
-    if (hasGenerated) {
+    if (hasGenerated && resultsCardY > 0 && resultsCardHeight > 0 && scrollViewHeight > 0) {
+      // Small delay to ensure layout is stable
       setTimeout(() => {
-        scrollViewRef.current?.scrollTo({ y: 420, animated: true });
-      }, 180);
+        // We want to center the card in the *available visual space* of the ScrollView.
+        // The ScrollView takes up exactly the space between the Header and the Bottom (Ads/Tab).
+        // So we just need to center the content in the ScrollView's viewport.
+        
+        // Calculate the target scroll position:
+        // Center of Card relative to Content Top = resultsCardY + (resultsCardHeight / 2)
+        // Center of Viewport = scrollViewHeight / 2
+        // Scroll Position = (Center of Card) - (Center of Viewport)
+        
+        const targetScrollY = resultsCardY + (resultsCardHeight / 2) - (scrollViewHeight / 2);
+        
+        console.log('Auto-scroll debug:', {
+          resultsCardY,
+          resultsCardHeight,
+          scrollViewHeight,
+          targetScrollY,
+          isSubscribed
+        });
+        
+        scrollViewRef.current?.scrollTo({ y: Math.max(targetScrollY, 0), animated: true });
+      }, 100);
     }
-  }, [hasGenerated]);
+  }, [hasGenerated, resultsCardY, resultsCardHeight, scrollViewHeight]);
 
   const handleDateChange = (event: any, selectedDate?: Date) => {
     if (Platform.OS === 'android') {
@@ -678,15 +856,7 @@ const LuckyNumbersScreen: React.FC = () => {
 
   // Random generation function
   const generateRandomData = () => {
-    // Random names - Traditional Chinese and English only
-    const maleNames = ['陳大文', '李小明', '王志強', '張建國', '劉偉業', '黃家豪', '吳文彬', '林志明',
-                       'Chan Tai Man', 'Lee Siu Ming', 'Wong Chi Keung', 'Cheung Kin Kwok', 'Lau Wai Yip'];
-    const femaleNames = ['陳小芳', '李美玲', '王淑儀', '張麗華', '劉婉華', '黃靜雯', '吳詠恩', '林嘉怡',
-                         'Chan Siu Fong', 'Lee Mei Ling', 'Wong Shuk Yi', 'Cheung Lai Wah', 'Lau Yuen Wah'];
-    
     const randomGender = Math.random() > 0.5 ? 'male' : 'female';
-    const nameList = randomGender === 'male' ? maleNames : femaleNames;
-    const randomName = nameList[Math.floor(Math.random() * nameList.length)];
     
     // Random birth date (between 1960-2006)
     const randomYear = 1960 + Math.floor(Math.random() * 46);
@@ -700,8 +870,6 @@ const LuckyNumbersScreen: React.FC = () => {
     // Random birth place
     const places = BIRTH_PLACES.map(p => p.timezone);
     const randomPlace = places[Math.floor(Math.random() * places.length)];
-    
-    setName(randomName);
     setBirthDate(randomBirthDate);
     setTempDate(randomBirthDate);
     setBirthTime(randomHour);
@@ -713,50 +881,40 @@ const LuckyNumbersScreen: React.FC = () => {
 
   // Reset user data (except name)
   const resetUserData = () => {
-    Alert.alert(
-      i18n.t('luckyNumbers.resetTitle'),
-      i18n.t('luckyNumbers.resetMessage'),
-      [
-        {
-          text: i18n.t('common.cancel'),
-          style: 'cancel',
-        },
-        {
-          text: i18n.t('common.confirm'),
-          style: 'destructive',
-          onPress: () => {
-            const today = new Date();
-            setName('');
-            setBirthDate(today);
-            setTempDate(today);
-            setBirthTime(12);
-            setTempTime(12);
-            setBirthPlace('Asia/Hong_Kong');
-            setTempPlace('Asia/Hong_Kong');
-            setGender('male');
-            setHasGenerated(false);
-            setLuckyNumbers([]);
-            setSpecialNumber(0);
-            setSuggestedLocation(null);
-            setPurchaseDateTime(null);
-            setAlternativePurchaseDateTime(null);
-          },
-        },
-      ]
-    );
+    const defaultDate = new Date();
+    defaultDate.setFullYear(defaultDate.getFullYear() - 18);
+    
+    // Direct reset without alert in edit modal context
+    setBirthDate(defaultDate);
+    setTempDate(defaultDate);
+    setBirthTime(12);
+    setTempTime(12);
+    setTempMinute(0);
+    setBirthMinute(0);
+    setBirthPlace('Asia/Hong_Kong');
+    setTempPlace('Asia/Hong_Kong');
+    setGender(null);
+    setHasGenerated(false);
+    setLuckyNumbers([]);
+    setSpecialNumber(0);
+    setSuggestedLocation(null);
+    setPurchaseDateTime(null);
+    setAlternativePurchaseDateTime(null);
   };
 
   // Check if user has input any data (compared to reset values)
   const hasUserData = () => {
-    const today = new Date();
-    const isSameDate = birthDate.getFullYear() === today.getFullYear() &&
-                       birthDate.getMonth() === today.getMonth() &&
-                       birthDate.getDate() === today.getDate();
+    const defaultDate = new Date();
+    defaultDate.setFullYear(defaultDate.getFullYear() - 18);
+    const isSameDate = birthDate.getFullYear() === defaultDate.getFullYear() &&
+                       birthDate.getMonth() === defaultDate.getMonth() &&
+                       birthDate.getDate() === defaultDate.getDate();
     
     return !isSameDate ||
            birthTime !== 12 ||
+           birthMinute !== 0 ||
            birthPlace !== 'Asia/Hong_Kong' ||
-           gender !== 'male';
+           gender !== null;
   };
 
   // Confirm user data
@@ -1027,6 +1185,19 @@ const LuckyNumbersScreen: React.FC = () => {
       setHasGenerated(true);
       setIsLoading(false);
       
+      // Scroll to center the results card while hiding Generate button area
+      setTimeout(() => {
+        if (scrollViewRef.current && resultsCardY > 0) {
+          // Calculate scroll position to center the card vertically
+          // Subtract some pixels so the card is centered, not at top
+          const scrollTarget = resultsCardY - 100; // Leave 100px above the card for visual balance
+          scrollViewRef.current.scrollTo({ 
+            y: Math.max(scrollTarget, 0),
+            animated: true 
+          });
+        }
+      }, 150);
+      
       // Increment generation count for interstitial ad tracking
       incrementGenerationCount();
 
@@ -1038,36 +1209,17 @@ const LuckyNumbersScreen: React.FC = () => {
         userData.birthPlace !== birthPlace ||
         userData.gender !== gender;
 
-      // Ask user if they want to save their data for next time
+      // Automatically save user data without asking
       if (hasDataChanged) {
-        Alert.alert(
-          i18n.t('luckyNumbers.saveInfo'),
-          i18n.t('luckyNumbers.savePrompt'),
-          [
-            {
-              text: i18n.t('common.cancel'),
-              style: 'cancel',
-              onPress: () => {
-                setHasDataSaved(false);
-              },
-            },
-            {
-              text: i18n.t('common.ok'),
-              onPress: async () => {
-                await saveUserData({
-                  name,
-                  birthDate,
-                  birthTime,
-                  birthPlace,
-                  gender,
-                });
-                setHasDataSaved(true);
-                // Trigger reload to update Bazi Analysis screen
-                triggerUserDataReload();
-              },
-            },
-          ]
-        );
+        await saveUserData({
+          birthDate,
+          birthTime,
+          birthPlace,
+          gender,
+        });
+        setHasDataSaved(true);
+        // Trigger reload to update Bazi Analysis screen
+        triggerUserDataReload();
       } else {
         // Data hasn't changed, just trigger reload
         triggerUserDataReload();
@@ -1080,22 +1232,21 @@ const LuckyNumbersScreen: React.FC = () => {
       try {
         await saveHistory({
           id: generateId(),
-          date: formatDate(new Date(), language),
-          time: formatTime(new Date(), language),
+          date: formatDate(drawDate, language),
+          time: '21:30',
           numbers: sortedNumbers,
           specialNumber: specialNum,
           location: locationDisplay.name,
           locationAddress: locationDisplay.address,
           locationLat: location.lat,
           locationLng: location.lng,
-          userName: name,
         });
         console.log('History saved successfully');
       } catch (error) {
         console.error('Error saving history:', error);
       }
     }, 1000);
-  }, [name, birthDate, birthTime, birthPlace, gender, language, hasDataSaved, triggerUserDataReload]);
+  }, [birthDate, birthTime, birthPlace, gender, drawDate, language, hasDataSaved, triggerUserDataReload]);
 
   const getBirthPlaceName = (timezone: string): string => {
     const place = BIRTH_PLACES.find(p => p.timezone === timezone);
@@ -1129,38 +1280,96 @@ const LuckyNumbersScreen: React.FC = () => {
         style={styles.flex}
       >
         {/* Header */}
-        <LinearGradient
+        <AnimatedBanner
           colors={[COLORS.gradientStart, COLORS.gradientEnd]}
           style={styles.header}
         >
           <View style={styles.headerContent}>
             <View style={styles.headerTitleContainer}>
-              <Text style={styles.headerTitle}>{i18n.t('luckyNumbers.title')}</Text>
-              <Text style={styles.headerSubtitle}>{i18n.t('luckyNumbers.subtitle')}</Text>
+              <Text style={[styles.headerTitle, { 
+                color: '#FFD700', // Shiny Gold
+                // Reverted to default font as requested
+                // fontFamily: Platform.select({ ios: 'STKaiti', android: 'serif' }),
+                textShadowColor: '#B8860B',
+                textShadowOffset: { width: 2, height: 2 },
+                textShadowRadius: 4,
+                letterSpacing: 1
+              }]}>{i18n.t('luckyNumbers.title')}</Text>
+              <Text style={[styles.headerSubtitle, { color: '#FFED4E', opacity: 0.95 }]}>{i18n.t('luckyNumbers.subtitle')}</Text>
             </View>
           </View>
-        </LinearGradient>
+          
+          {/* Marquee / Notification Area */}
+          <View style={{ 
+            marginTop: SPACING.sm, 
+            backgroundColor: 'rgba(0,0,0,0.2)', 
+            borderRadius: BORDER_RADIUS.round,
+            paddingVertical: SPACING.xxs,
+            paddingHorizontal: SPACING.sm,
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginHorizontal: SPACING.sm,
+            borderWidth: 1,
+            borderColor: 'rgba(255, 215, 0, 0.3)'
+          }}>
+            <GlowingIcon />
+            <MarqueeText 
+              text={nextDrawDate ? `${i18n.t('luckyNumbers.nextDraw')}: ${nextDrawNumber || ''}   ${i18n.t('luckyNumbers.drawDate')}: ${formatDateWithWeekday(nextDrawDate, language)}  ✨ ${i18n.t('luckyNumbers.wishingSuccess')} ✨` : ''} 
+              style={{ 
+                color: '#FFFFFF', 
+                fontSize: FONT_SIZES.sm, 
+                fontWeight: '900',
+                textShadowColor: '#FFD700',
+                textShadowOffset: { width: 0, height: 0 },
+                textShadowRadius: 8,
+              }} 
+            />
+          </View>
+        </AnimatedBanner>
 
         <ScrollView
           ref={scrollViewRef}
           style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
+          onLayout={(e) => setScrollViewHeight(e.nativeEvent.layout.height)}
+          contentContainerStyle={[
+            styles.scrollContent, 
+            !hasGenerated && { 
+              justifyContent: 'center', 
+              paddingTop: 0, 
+              paddingBottom: SPACING.xl // Reduce bottom padding to center it properly
+            },
+            hasGenerated && { paddingTop: SPACING.md }
+          ]} 
           showsVerticalScrollIndicator={false}
         >
-          {/* Edit Profile Button */}
-          <View style={styles.editProfileButtonContainer}>
-            <CustomButton
-              title={i18n.t('luckyNumbers.editProfile')}
-              onPress={() => setShowUserModal(true)}
-              variant="primary"
-              size="large"
-              icon="person-circle-outline"
-              style={styles.editProfileButton}
-            />
-          </View>
-
           {/* Input Form */}
           <Card style={styles.formCard}>
+            
+            {/* User Profile Summary (Mini Header inside Card) */}
+            <TouchableOpacity 
+              onPress={() => setShowUserModal(true)}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: SPACING.lg,
+                paddingVertical: SPACING.sm,
+                borderBottomWidth: 1,
+                borderBottomColor: 'rgba(255, 215, 0, 0.5)', // Gold separator
+              }}
+            >
+              <Ionicons name="person-circle" size={28} color="#FFD700" style={{ marginRight: SPACING.xs }} />
+              <Text style={{ 
+                fontSize: FONT_SIZES.lg, 
+                color: '#FFD700', // Gold text
+                fontFamily: language.startsWith('zh') ? 'MaShanZheng_400Regular' : undefined,
+                fontWeight: language.startsWith('zh') ? 'normal' : 'bold',
+              }}>
+                {i18n.t('luckyNumbers.editProfile')}
+              </Text>
+              <Ionicons name="pencil" size={20} color="#FFD700" style={{ marginLeft: SPACING.xs }} />
+            </TouchableOpacity>
+
             {/* Draw Date */}
             <View style={styles.inputGroup}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.sm }}>
@@ -1192,19 +1401,29 @@ const LuckyNumbersScreen: React.FC = () => {
             </View>
 
             {/* Generate Button */}
-            <CustomButton
-              title={i18n.t('luckyNumbers.generateNumbers')}
-              onPress={generateNumbers}
-              variant="primary"
-              size="large"
-              loading={isLoading}
-              style={styles.generateButton}
-            />
+            <Animated.View style={{ opacity: buttonAnim }}>
+              <CustomButton
+                title={i18n.t('luckyNumbers.generateNumbers')}
+                onPress={generateNumbers}
+                variant="gold"
+                size="large"
+                loading={isLoading}
+                style={styles.generateButton}
+              />
+            </Animated.View>
           </Card>
 
           {/* Results */}
           {hasGenerated && (
-            <Card variant="gradient" style={styles.resultsCard}>
+            <Card 
+              variant="gradient" 
+              style={styles.resultsCard}
+              onLayout={(event) => {
+                const { y, height } = event.nativeEvent.layout;
+                setResultsCardY(y);
+                setResultsCardHeight(height);
+              }}
+            >
               <Text style={styles.resultsTitle}>
                 {i18n.t('luckyNumbers.yourLuckyNumbers')}
               </Text>
@@ -1285,26 +1504,48 @@ const LuckyNumbersScreen: React.FC = () => {
                       style={styles.mapButton}
                       onPress={() => {
                         const locationDisplay = getLocationDisplay(suggestedLocation);
-                        const url = `https://www.google.com/maps/search/?api=1&query=${suggestedLocation.lat},${suggestedLocation.lng}`;
-                        Alert.alert(
-                          i18n.t('luckyNumbers.openMap'),
-                          locationDisplay.address,
-                          [
-                            { text: i18n.t('common.cancel'), style: 'cancel' },
-                            {
-                              text: i18n.t('common.ok'),
-                              onPress: () => {
-                                // Open Google Maps
-                                const mapUrl = Platform.OS === 'ios'
-                                  ? `maps:0,0?q=${suggestedLocation.lat},${suggestedLocation.lng}`
-                                  : `geo:0,0?q=${suggestedLocation.lat},${suggestedLocation.lng}`;
-                                require('react-native').Linking.openURL(mapUrl).catch(() => {
-                                  require('react-native').Linking.openURL(url);
+                        const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${suggestedLocation.lat},${suggestedLocation.lng}`;
+                        const appleMapsUrl = `maps:0,0?q=${suggestedLocation.lat},${suggestedLocation.lng}`;
+                        const androidMapsUrl = `geo:0,0?q=${suggestedLocation.lat},${suggestedLocation.lng}`;
+                        
+                        // Prepare button options based on platform
+                        const buttons: any[] = [
+                          { 
+                            text: 'Google Maps',
+                            onPress: () => {
+                              require('react-native').Linking.openURL(googleMapsUrl).catch(() => {
+                                showAlert({
+                                  title: language.startsWith('zh') ? '錯誤' : 'Error',
+                                  message: language.startsWith('zh') ? '無法打開地圖' : 'Cannot open map',
                                 });
-                              },
-                            },
-                          ]
-                        );
+                              });
+                            }
+                          },
+                        ];
+                        
+                        // Add Apple Maps option for iOS
+                        if (Platform.OS === 'ios') {
+                          buttons.push({
+                            text: 'Apple Maps',
+                            onPress: () => {
+                              require('react-native').Linking.openURL(appleMapsUrl).catch(() => {
+                                showAlert({
+                                  title: language.startsWith('zh') ? '錯誤' : 'Error',
+                                  message: language.startsWith('zh') ? '無法打開地圖' : 'Cannot open map',
+                                });
+                              });
+                            }
+                          });
+                        }
+                        
+                        // Add cancel button
+                        buttons.push({ text: i18n.t('common.cancel'), style: 'cancel' });
+                        
+                        showAlert({
+                          title: i18n.t('luckyNumbers.openMap'),
+                          message: locationDisplay.address,
+                          buttons: buttons,
+                        });
                       }}
                     >
                       <Ionicons name="navigate" size={16} color="#fff" />
@@ -1316,13 +1557,18 @@ const LuckyNumbersScreen: React.FC = () => {
             </Card>
           )}
         </ScrollView>
+      </KeyboardAvoidingView>
 
-        {/* User Data Modal */}
-        <Modal
-          visible={showUserModal}
-          animationType="slide"
-          transparent={true}
-          onRequestClose={() => setShowUserModal(false)}
+      {/* User Data Modal */}
+      <Modal
+        visible={showUserModal}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => setShowUserModal(false)}
+      >
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
         >
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
@@ -1333,11 +1579,68 @@ const LuckyNumbersScreen: React.FC = () => {
                 </TouchableOpacity>
               </View>
 
-              <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
+              <ScrollView 
+                style={styles.modalBody} 
+                contentContainerStyle={styles.modalBodyContent}
+                showsVerticalScrollIndicator={true}
+              >
                 {/* Privacy Notice */}
                 <View style={styles.privacyNotice}>
                   <Ionicons name="shield-checkmark" size={20} color={COLORS.primary} />
                   <Text style={styles.privacyText}>{i18n.t('luckyNumbers.privacyNotice')}</Text>
+                </View>
+
+                {/* Gender */}
+                <View style={styles.modalInputGroup}>
+                  <Text style={styles.modalLabel}>{i18n.t('luckyNumbers.gender')}</Text>
+                  <View style={styles.genderContainer}>
+                    <TouchableOpacity
+                      style={[
+                        styles.genderButton,
+                        styles.genderButtonMale,
+                        gender === 'male' && styles.genderButtonActive,
+                      ]}
+                      onPress={() => setGender('male')}
+                    >
+                      <Ionicons
+                        name="male"
+                        size={24}
+                        color={gender === 'male' ? COLORS.textPrimary : '#4A90E2'}
+                      />
+                      <Text
+                        style={[
+                          styles.genderButtonText,
+                          styles.genderButtonTextMale,
+                          gender === 'male' && styles.genderButtonTextActive,
+                        ]}
+                      >
+                        {i18n.t('luckyNumbers.male')}
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[
+                        styles.genderButton,
+                        styles.genderButtonFemale,
+                        gender === 'female' && styles.genderButtonActive,
+                      ]}
+                      onPress={() => setGender('female')}
+                    >
+                      <Ionicons
+                        name="female"
+                        size={24}
+                        color={gender === 'female' ? COLORS.textPrimary : '#E91E63'}
+                      />
+                      <Text
+                        style={[
+                          styles.genderButtonText,
+                          styles.genderButtonTextFemale,
+                          gender === 'female' && styles.genderButtonTextActive,
+                        ]}
+                      >
+                        {i18n.t('luckyNumbers.female')}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
 
                 {/* Birth Date */}
@@ -1374,6 +1677,7 @@ const LuckyNumbersScreen: React.FC = () => {
                         </View>
                         <View style={styles.pickerWrapper}>
                           <DateTimePicker
+                            key="edit-bazi-birthdate-picker"
                             value={tempDate}
                             mode="date"
                             display="spinner"
@@ -1383,7 +1687,14 @@ const LuckyNumbersScreen: React.FC = () => {
                               }
                             }}
                             textColor={COLORS.textPrimary}
+                            themeVariant={isDarkMode ? 'dark' : 'light'}
                             style={styles.dateTimePicker}
+                            maximumDate={(() => {
+                              const maxDate = new Date();
+                              maxDate.setFullYear(maxDate.getFullYear() - 18);
+                              return maxDate;
+                            })()}
+                            minimumDate={new Date(1900, 0, 1)}
                           />
                         </View>
                         <CustomButton
@@ -1405,11 +1716,16 @@ const LuckyNumbersScreen: React.FC = () => {
                     display="default"
                     onChange={(event, selectedDate) => {
                       setShowDatePicker(false);
-                      if (selectedDate) {
+                      if (event.type === 'set' && selectedDate) {
                         setBirthDate(selectedDate);
                       }
                     }}
-                    textColor={COLORS.textPrimary}
+                    maximumDate={(() => {
+                      const maxDate = new Date();
+                      maxDate.setFullYear(maxDate.getFullYear() - 18);
+                      return maxDate;
+                    })()}
+                    minimumDate={new Date(1900, 0, 1)}
                   />
                 )}
 
@@ -1420,10 +1736,13 @@ const LuckyNumbersScreen: React.FC = () => {
                     style={styles.modalPickerButton}
                     onPress={() => {
                       setTempTime(birthTime);
+                      setTempMinute(birthMinute);
                       setShowTimePicker(true);
                     }}
                   >
-                    <Text style={styles.modalPickerText}>{formatBirthTime(birthTime)}</Text>
+                    <Text style={styles.modalPickerText}>
+                      {birthTime.toString().padStart(2, '0')}:{birthMinute.toString().padStart(2, '0')}
+                    </Text>
                     <Ionicons name="time-outline" size={20} color={COLORS.primary} />
                   </TouchableOpacity>
                 </View>
@@ -1443,22 +1762,43 @@ const LuckyNumbersScreen: React.FC = () => {
                             <Ionicons name="close" size={28} color={COLORS.textPrimary} />
                           </TouchableOpacity>
                         </View>
-                        <View style={styles.pickerWrapper}>
-                          <Picker
-                            selectedValue={tempTime}
-                            onValueChange={(value) => setTempTime(Number(value))}
-                            style={styles.picker}
-                            itemStyle={{ color: COLORS.textPrimary }}
-                          >
-                            {Array.from({ length: 24 }, (_, i) => (
-                              <Picker.Item key={i} label={formatBirthTime(i)} value={i} />
-                            ))}
-                          </Picker>
+                        <View style={{ flexDirection: 'row', gap: SPACING.sm }}>
+                          <View style={{ flex: 1 }}>
+                            <Text style={{ textAlign: 'center', marginBottom: SPACING.xs, color: COLORS.textPrimary, fontSize: FONT_SIZES.sm }}>{i18n.t('luckyNumbers.hour')}</Text>
+                            <Picker
+                              selectedValue={tempTime}
+                              onValueChange={(value) => setTempTime(Number(value))}
+                              style={styles.picker}
+                              itemStyle={{ color: COLORS.textPrimary }}
+                              dropdownIconColor={COLORS.textPrimary}
+                              themeVariant={isDarkMode ? 'dark' : 'light'}
+                            >
+                              {Array.from({ length: 24 }, (_, i) => (
+                                <Picker.Item key={i} label={i.toString().padStart(2, '0')} value={i} />
+                              ))}
+                            </Picker>
+                          </View>
+                          <View style={{ flex: 1 }}>
+                            <Text style={{ textAlign: 'center', marginBottom: SPACING.xs, color: COLORS.textPrimary, fontSize: FONT_SIZES.sm }}>{i18n.t('luckyNumbers.minute')}</Text>
+                            <Picker
+                              selectedValue={tempMinute}
+                              onValueChange={(value) => setTempMinute(Number(value))}
+                              style={styles.picker}
+                              itemStyle={{ color: COLORS.textPrimary }}
+                              dropdownIconColor={COLORS.textPrimary}
+                              themeVariant={isDarkMode ? 'dark' : 'light'}
+                            >
+                              {Array.from({ length: 60 }, (_, i) => (
+                                <Picker.Item key={i} label={i.toString().padStart(2, '0')} value={i} />
+                              ))}
+                            </Picker>
+                          </View>
                         </View>
                         <CustomButton
                           title={i18n.t('common.confirm')}
                           onPress={() => {
                             setBirthTime(tempTime);
+                            setBirthMinute(tempMinute);
                             setShowTimePicker(false);
                           }}
                           style={styles.confirmButton}
@@ -1469,13 +1809,14 @@ const LuckyNumbersScreen: React.FC = () => {
                 )}
                 {showTimePicker && Platform.OS === 'android' && (
                   <DateTimePicker
-                    value={new Date(0, 0, 0, birthTime, 0)}
+                    value={new Date(0, 0, 0, birthTime, birthMinute)}
                     mode="time"
                     display="default"
                     onChange={(event, selectedTime) => {
                       setShowTimePicker(false);
                       if (selectedTime) {
                         setBirthTime(selectedTime.getHours());
+                        setBirthMinute(selectedTime.getMinutes());
                       }
                     }}
                   />
@@ -1511,21 +1852,52 @@ const LuckyNumbersScreen: React.FC = () => {
                             <Ionicons name="close" size={28} color={COLORS.textPrimary} />
                           </TouchableOpacity>
                         </View>
-                        <View style={styles.pickerWrapper}>
-                          <Picker
-                            selectedValue={tempPlace}
-                            onValueChange={(value) => setTempPlace(value)}
-                            style={styles.picker}
-                            itemStyle={{ color: COLORS.textPrimary }}
-                          >
-                            {BIRTH_PLACES.map((place) => (
-                              <Picker.Item
-                                key={place.timezone}
-                                label={i18n.t(place.labelKey)}
-                                value={place.timezone}
-                              />
-                            ))}
-                          </Picker>
+                        <View style={[styles.pickerWrapper, Platform.OS === 'android' && { height: 300 }]}>
+                          {Platform.OS === 'ios' ? (
+                            <Picker
+                              selectedValue={tempPlace}
+                              onValueChange={(value) => setTempPlace(value)}
+                              style={styles.picker}
+                              itemStyle={{ color: COLORS.textPrimary }}
+                              dropdownIconColor={COLORS.textPrimary}
+                              themeVariant={isDarkMode ? 'dark' : 'light'}
+                            >
+                              {BIRTH_PLACES.map((place) => (
+                                <Picker.Item
+                                  key={place.timezone}
+                                  label={i18n.t(place.labelKey)}
+                                  value={place.timezone}
+                                />
+                              ))}
+                            </Picker>
+                          ) : (
+                            <FlatList
+                              data={BIRTH_PLACES}
+                              keyExtractor={(item: { timezone: string }) => item.timezone}
+                              renderItem={({ item }: { item: { timezone: string; labelKey: string } }) => (
+                                <TouchableOpacity
+                                  style={{
+                                    paddingVertical: 12,
+                                    borderBottomWidth: 1,
+                                    borderBottomColor: 'rgba(0,0,0,0.1)',
+                                    backgroundColor: tempPlace === item.timezone ? 'rgba(255, 215, 0, 0.2)' : 'transparent',
+                                    paddingHorizontal: SPACING.md,
+                                  }}
+                                  onPress={() => setTempPlace(item.timezone)}
+                                >
+                                  <Text style={{ 
+                                    fontSize: FONT_SIZES.md, 
+                                    textAlign: 'center',
+                                    color: COLORS.textPrimary,
+                                    fontWeight: tempPlace === item.timezone ? 'bold' : 'normal'
+                                  }}>
+                                    {i18n.t(item.labelKey)}
+                                  </Text>
+                                </TouchableOpacity>
+                              )}
+                              style={{ width: '100%' }}
+                            />
+                          )}
                         </View>
                         <CustomButton
                           title={i18n.t('common.confirm')}
@@ -1539,55 +1911,6 @@ const LuckyNumbersScreen: React.FC = () => {
                     </View>
                   </Modal>
                 )}
-
-                {/* Gender */}
-                <View style={styles.modalInputGroup}>
-                  <Text style={styles.modalLabel}>{i18n.t('luckyNumbers.gender')}</Text>
-                  <View style={styles.genderContainer}>
-                    <TouchableOpacity
-                      style={[
-                        styles.genderButton,
-                        gender === 'male' && styles.genderButtonActive,
-                      ]}
-                      onPress={() => setGender('male')}
-                    >
-                      <Ionicons
-                        name="male"
-                        size={20}
-                        color={gender === 'male' ? '#fff' : COLORS.primary}
-                      />
-                      <Text
-                        style={[
-                          styles.genderButtonText,
-                          gender === 'male' && styles.genderButtonTextActive,
-                        ]}
-                      >
-                        {i18n.t('luckyNumbers.male')}
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[
-                        styles.genderButton,
-                        gender === 'female' && styles.genderButtonActive,
-                      ]}
-                      onPress={() => setGender('female')}
-                    >
-                      <Ionicons
-                        name="female"
-                        size={20}
-                        color={gender === 'female' ? '#fff' : COLORS.primary}
-                      />
-                      <Text
-                        style={[
-                          styles.genderButtonText,
-                          gender === 'female' && styles.genderButtonTextActive,
-                        ]}
-                      >
-                        {i18n.t('luckyNumbers.female')}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
               </ScrollView>
 
               <View style={styles.modalFooter}>
@@ -1595,7 +1918,7 @@ const LuckyNumbersScreen: React.FC = () => {
                   <CustomButton
                     title={i18n.t('luckyNumbers.reset')}
                     onPress={resetUserData}
-                    variant="outlineRed"
+                    variant="outlineGold"
                     size="medium"
                     style={styles.modalButtonInner}
                   />
@@ -1604,7 +1927,7 @@ const LuckyNumbersScreen: React.FC = () => {
                   <CustomButton
                     title={hasUserData() ? i18n.t('common.confirm') : i18n.t('luckyNumbers.random')}
                     onPress={confirmUserData}
-                    variant="primary"
+                    variant="gold"
                     size="medium"
                     style={styles.modalButtonInner}
                   />
@@ -1612,8 +1935,8 @@ const LuckyNumbersScreen: React.FC = () => {
               </View>
             </View>
           </View>
-        </Modal>
-      </KeyboardAvoidingView>
+        </KeyboardAvoidingView>
+      </Modal>
       
       {/* Draw Date Picker Modal */}
       {showDrawDatePicker && Platform.OS === 'ios' && (
@@ -1637,8 +1960,11 @@ const LuckyNumbersScreen: React.FC = () => {
                   mode="date"
                   display="spinner"
                   onChange={handleDrawDateChange}
+                  minimumDate={new Date()}
+                  maximumDate={new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)}
                   style={{ width: '100%' }}
                   textColor={COLORS.textPrimary}
+                  themeVariant={isDarkMode ? 'dark' : 'light'}
                 />
               </View>
               <CustomButton
@@ -1656,11 +1982,24 @@ const LuckyNumbersScreen: React.FC = () => {
           mode="date"
           display="default"
           onChange={handleDrawDateChange}
+          minimumDate={new Date()}
+          maximumDate={new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)}
         />
       )}
       
       {/* Ad Banner */}
       {!isSubscribed && <AdBanner position="bottom" adType="luckyNumbersBanner" />}
+      
+      {/* Custom Alert */}
+      <CustomAlert
+        visible={alertState.visible}
+        title={alertState.title}
+        message={alertState.message}
+        buttons={alertState.buttons}
+        onDismiss={hideAlert}
+        isDarkMode={isDarkMode}
+        fontSize={fontSize}
+      />
     </SafeAreaView>
   );
 };

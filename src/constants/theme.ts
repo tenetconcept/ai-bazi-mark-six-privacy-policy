@@ -13,15 +13,18 @@ export const LIGHT_COLORS = {
   secondaryLight: '#FFE55C',
   
   // Background colors
-  background: '#FFFFFF',
-  backgroundDark: '#F5F5F5',
+  background: '#FFF8E7', // Light Gold
+  backgroundDark: '#F5DEB3', // Wheat/Gold
   backgroundCard: '#FFFFFF',
+  cardInnerBackground: '#FFF8E7', // Cream for inner content
   
   // Text colors
-  textPrimary: '#1A1A1A',
-  textSecondary: '#666666',
-  textLight: '#999999',
+  textPrimary: '#5D0000', // Deep Dark Red for readable text on gold
+  textSecondary: '#8B4513', // Saddle Brown
+  textBrand: '#5D0000', // Brand text (Deep Red in Light)
+  textLight: '#A0522D', // Sienna
   textWhite: '#FFFFFF',
+  textGold: '#FFD700', // Gold text for Red backgrounds
   
   // Status colors
   success: '#28A745',
@@ -51,7 +54,7 @@ export const LIGHT_COLORS = {
   shadowDark: 'rgba(0, 0, 0, 0.2)',
   
   // Tab bar
-  tabBarBackground: '#FFFFFF',
+  tabBarBackground: '#FFF8E7',
   tabBarActive: '#C41E3A',
   tabBarInactive: '#999999',
   
@@ -73,14 +76,16 @@ export const DARK_COLORS = {
   
   // Background colors
   background: '#121212',
-  backgroundDark: '#1E1E1E',
+  backgroundDark: '#000000',
   backgroundCard: '#1E1E1E',
+  cardInnerBackground: '#2C2C2C', // Dark Grey for inner content
   
   // Text colors
   textPrimary: '#FFFFFF',
-  textSecondary: '#B3B3B3',
-  textLight: '#808080',
+  textSecondary: '#E6C288', // Warm Beige (instead of #B3B3B3)
+  textLight: '#9E8B6E',     // Muted Earthy Gold (instead of #808080)
   textWhite: '#FFFFFF',
+  textBrand: '#FFD700', // Brand text (Gold in Dark)
   
   // Status colors
   success: '#34D058',
@@ -110,10 +115,10 @@ export const DARK_COLORS = {
   shadowDark: 'rgba(0, 0, 0, 0.5)',
   
   // Tab bar
-  tabBarBackground: '#1E1E1E',
-  tabBarActive: '#DC143C',
-  tabBarInactive: '#808080',
-  
+  tabBarBackground: '#1E1E1E', // Dark Card
+  tabBarActive: '#DC143C', // Festive Red
+  tabBarInactive: '#B8860B', // Dark Gold
+
   // Header
   headerBackground: '#DC143C',
   headerText: '#FFFFFF',
@@ -143,6 +148,7 @@ export const FONTS = {
     xl: 18,
     xxl: 24,
     xxxl: 32,
+    xxxxl: 36,
   },
 };
 
@@ -160,6 +166,7 @@ export const getFontSizes = (fontSize: FontSize = 'medium') => {
 };
 
 export const SPACING = {
+  xxs: 3,
   xs: 4,
   sm: 8,
   md: 12,
@@ -203,7 +210,7 @@ export const SHADOWS = {
 };
 
 export default {
-  COLORS,
+  COLORS: LIGHT_COLORS,
   FONTS,
   SPACING,
   BORDER_RADIUS,

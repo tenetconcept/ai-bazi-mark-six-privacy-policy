@@ -14,6 +14,147 @@ export interface MarkSixDrawDates {
   nextDraw: DrawInfo | null;
 }
 
+export interface TenetDrawData {
+  nextDraw: string;
+  nextDrawDate: string;
+  lastDraw: string;
+  lastDrawDate: string;
+  lastUpdated: string;
+}
+
+/**
+ * Fetch latest Mark Six draw info from Tenet Concept API
+ */
+export const fetchTenetDrawData = async (): Promise<TenetDrawData | null> => {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+    const response = await fetch('https://m6r.tenetconcept.com/', {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+      },
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('Fetched Tenet draw data:', data);
+    
+    return {
+      nextDraw: data.nextDraw,
+      nextDrawDate: data.nextDrawDate,
+      lastDraw: data.lastDraw,
+      lastDrawDate: data.lastDrawDate,
+      lastUpdated: data.lastUpdated,
+    };
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.name === 'AbortError') {
+        console.error('Tenet API timeout after 5 seconds');
+      } else {
+        console.error('Error fetching from Tenet API:', error.message);
+      }
+    } else {
+      console.error('Error fetching Tenet draw data:', error);
+    }
+    return null;
+  }
+};
+
+/**
+ * Parse Tenet date string to Date object
+ * Format: "Sat, 10 Jan 2026" or "08 Jan 2026"
+ */
+const parseTenetDate = (dateStr: string): Date | null => {
+  try {
+    // Remove day of week if present
+    const cleanDateStr = dateStr.replace(/^[A-Za-z]+,\s*/, '');
+    
+    // Parse "DD MMM YYYY"
+    const parts = cleanDateStr.split(' ');
+    if (parts.length !== 3) return null;
+    
+    const day = parseInt(parts[0]);
+    const monthStr = parts[1];
+    const year = parseInt(parts[2]);
+    
+    const monthMap: { [key: string]: number } = {
+      'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
+      'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
+    };
+    
+    const month = monthMap[monthStr];
+    if (month === undefined) return null;
+    
+    return new Date(year, month, day);
+  } catch (error) {
+    console.error('Error parsing Tenet date:', dateStr, error);
+    return null;
+  }
+};
+
+/**
+ * Get day of week name in Chinese
+ */
+const getDayOfWeekChinese = (date: Date): string => {
+  const days = ['日', '一', '二', '三', '四', '五', '六'];
+  return `星期${days[date.getDay()]}`;
+};
+
+/**
+ * Fetch Mark Six draw dates using Tenet API as primary source
+ */
+export const fetchMarkSixDrawDates = async (): Promise<MarkSixDrawDates> => {
+  // Try Tenet API first
+  const tenetData = await fetchTenetDrawData();
+  
+  if (tenetData) {
+    const lastDrawDate = parseTenetDate(tenetData.lastDrawDate);
+    const nextDrawDate = parseTenetDate(tenetData.nextDrawDate);
+    
+    const previousDraw: DrawInfo | null = lastDrawDate ? {
+      drawNumber: tenetData.lastDraw,
+      drawDate: lastDrawDate,
+      dayOfWeek: getDayOfWeekChinese(lastDrawDate),
+    } : null;
+    
+    const nextDraw: DrawInfo | null = nextDrawDate ? {
+      drawNumber: tenetData.nextDraw,
+      drawDate: nextDrawDate,
+      dayOfWeek: getDayOfWeekChinese(nextDrawDate),
+    } : null;
+    
+    console.log('Parsed Tenet draw data:', { previousDraw, nextDraw });
+    return { previousDraw, nextDraw };
+  }
+  
+  // Fallback to system date calculation if Tenet API fails
+  console.log('Tenet API failed, using system date fallback');
+  const now = new Date();
+  const nextDrawDate = getNextDrawDateFallback(now);
+  const prevDrawDate = getPreviousDrawDateFallback(now);
+  
+  return {
+    previousDraw: {
+      drawNumber: calculateDrawNumber(prevDrawDate),
+      drawDate: prevDrawDate,
+      dayOfWeek: getDayOfWeekChinese(prevDrawDate),
+    },
+    nextDraw: {
+      drawNumber: calculateDrawNumber(nextDrawDate),
+      drawDate: nextDrawDate,
+      dayOfWeek: getDayOfWeekChinese(nextDrawDate),
+    },
+  };
+};
+
 /**
  * Calculate Mark Six draw number based on date
  * Mark Six typically has 3 draws per week (Tue, Thu, Sat)
@@ -45,18 +186,10 @@ const calculateDrawNumber = (date: Date): string => {
 };
 
 /**
- * Get day of week name in Chinese
- */
-const getDayOfWeekChinese = (date: Date): string => {
-  const days = ['日', '一', '二', '三', '四', '五', '六'];
-  return `星期${days[date.getDay()]}`;
-};
-
-/**
- * Fetch latest Mark Six draw dates from magayo.com
+ * Fetch latest Mark Six draw dates from magayo.com (fallback method)
  * This website has server-side rendered content we can parse
  */
-export const fetchMarkSixDrawDates = async (): Promise<MarkSixDrawDates> => {
+const fetchMarkSixDrawDatesFromMagayo = async (): Promise<MarkSixDrawDates> => {
   try {
     // Create AbortController for 5 second timeout
     const controller = new AbortController();

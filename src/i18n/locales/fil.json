@@ -48,7 +48,9 @@
     "baziInfo": "Impormasyon ng Bazi",
     "random": "Random",
     "drawDatePastError": "Ang petsa ng draw ay hindi maaaring nakaraan na",
-    "operatingHoursNotice": "Ang iminungkahing oras ay naadjust batay sa oras ng operasyon ng betting branch"
+    "operatingHoursNotice": "Ang iminungkahing oras ay naadjust batay sa oras ng operasyon ng betting branch",
+    "hour": "Oras",
+    "minute": "Minuto"
   },
   "places": {
     "hongKong": "Hong Kong",
@@ -100,9 +102,10 @@
     "wealth": "Kayamanan",
     "health": "Kalusugan",
     "relationship": "Relasyon",
-    "luckyDirection": "Lucky Direction",
-    "luckyColor": "Lucky Color",
-    "luckyNumber": "Lucky Number",
+    "luckyDirection": "Masuwerteng Direksyon",
+    "luckyColor": "Masuwerteng Kulay",
+    "luckyColors": "Masuwerteng Kulay",
+    "luckyNumber": "Masuwerteng Numero",
     "enterInfoFirst": "Mangyaring ilagay muna ang iyong impormasyon sa Lucky Numbers page"
   },
   "history": {
@@ -113,7 +116,7 @@
     "numbers": "Mga Numero",
     "specialNumber": "Special Number",
     "location": "Lokasyon ng Pagbili",
-    "clearHistory": "Burahin ang Kasaysayan",
+    "clearHistory": "Burahin ang Lahat ng Talaan",
     "clearConfirm": "Sigurado ka bang gusto mong burahin lahat ng record?",
     "confirm": "Kumpirmahin",
     "cancel": "Kanselahin",
@@ -151,7 +154,7 @@
   },
   "disclaimer": {
     "title": "Disclaimer",
-    "content": "⚠️ Mahalagang Paalala\n\nAng application na ito ay purong libangan at tradisyonal na pag-aaral ng kapalaran:\n\n• Lahat ng iminumungkahing numero ay batay lamang sa Bazi fortune-telling para sa libangan\n• Hindi garantisado ang anumang panalo o hindi ito investment advice\n• Ang app na ito ay HINDI gumagamit ng tunay na pera\n• Ang app na ito ay HINDI nagbibigay ng serbisyo sa pagsusugal\n• Hindi hinihikayat o itinataguyod ang pagsusugal\n• Walang kaugnayan sa Hong Kong Jockey Club o anumang gaming organization\n\nMangyaring gumamit nang responsable. Ang pagsusugal ay nakakasama. Humingi ng tulong kung kinakailangan.\n\nPara sa 18 taong gulang pataas lamang.",
+    "content": "⚠️ Mahalagang Paalala\n\nAng application na ito ay purong libangan at tradisyonal na pag-aaral ng kapalaran:\n\n• Ang mga resulta ng Bazi Mark Six analysis sa app na ito ay ibinibigay ng AI algorithms\n• Lahat ng iminumungkahing numero ay batay lamang sa Bazi fortune-telling para sa libangan\n• Hindi garantisado ang anumang panalo o hindi ito investment advice\n• Ang app na ito ay HINDI gumagamit ng tunay na pera\n• Ang app na ito ay HINDI nagbibigay ng serbisyo sa pagsusugal\n• Hindi hinihikayat o itinataguyod ang pagsusugal\n• Walang kaugnayan sa Hong Kong Jockey Club o anumang gaming organization\n\nMangyaring gumamit nang responsable. Ang pagsusugal ay nakakasama. Humingi ng tulong kung kinakailangan.\n\nPara sa 18 taong gulang pataas lamang.",
     "firstLaunchTitle": "Maligayang Pagdating",
     "firstLaunchContent": "⚠️ Mangyaring Basahin Nang Mabuti\n\nAng application na ito ay isang libangan tool batay sa tradisyonal na Bazi fortune-telling na nagbibigay ng lucky number suggestions.\n\nMahalagang Paalala:\n• Para sa libangan at pag-aaral ng kapalaran lamang\n• Walang tunay na pera transaction\n• Hindi nagbibigay ng gambling services\n• Lahat ng suggestion ay para sa reference lamang\n• Walang garantisadong resulta\n\nMangyaring kumpirmahin na ikaw ay 18 taong gulang o mas matanda at sumasang-ayon na gumamit nang responsable.",
     "agree": "Nabasa ko at sumasang-ayon",

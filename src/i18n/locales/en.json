@@ -26,6 +26,8 @@
     "selectDate": "Select Date",
     "selectTime": "Select Time",
     "selectPlace": "Select Place",
+    "nextDraw": "Next Draw",
+    "wishingSuccess": "Wishing you success!",
     "generateNumbers": "Generate Lucky Numbers",
     "yourLuckyNumbers": "Your Lucky Numbers",
     "specialNumber": "Special Number",
@@ -48,7 +50,9 @@
     "baziInfo": "Bazi Information",
     "random": "Random",
     "drawDatePastError": "Draw date cannot be in the past",
-    "operatingHoursNotice": "Suggested time adjusted based on betting branch operating hours"
+    "operatingHoursNotice": "Suggested time adjusted based on betting branch operating hours",
+    "hour": "Hour",
+    "minute": "Minute"
   },
   "places": {
     "hongKong": "Hong Kong",
@@ -102,18 +106,19 @@
     "relationship": "Relationship",
     "luckyDirection": "Lucky Direction",
     "luckyColor": "Lucky Color",
+    "luckyColors": "Lucky Colors",
     "luckyNumber": "Lucky Number",
     "enterInfoFirst": "Please enter your information on the Lucky Numbers page first"
   },
   "history": {
-    "title": "Number Suggestion History",
+    "title": "Number Generation History",
     "noRecords": "No records yet",
     "date": "Date",
     "time": "Time",
     "numbers": "Numbers",
     "specialNumber": "Special Number",
     "location": "Purchase Location",
-    "clearHistory": "Clear History",
+    "clearHistory": "Clear All Records",
     "clearConfirm": "Are you sure you want to clear all records?",
     "confirm": "Confirm",
     "cancel": "Cancel",
@@ -151,7 +156,7 @@
   },
   "disclaimer": {
     "title": "Disclaimer",
-    "content": "⚠️ Important Notice\n\nThis application is purely for entertainment and traditional fortune-telling research purposes:\n\n• All number suggestions are based solely on Bazi fortune-telling calculations for entertainment reference\n• Does not guarantee any winning results or constitute investment advice\n• This app does NOT involve any real money transactions\n• This app does NOT provide gambling services or platforms\n• Does not encourage or promote any gambling activities\n• No affiliation with Hong Kong Jockey Club or any gaming organizations\n\nPlease use responsibly and within your means. Gambling can lead to addiction. Seek professional help if needed.\n\nFor users 18 years and older only.",
+    "content": "⚠️ Important Notice\n\nThis application is purely for entertainment and traditional fortune-telling research purposes:\n\n• The Bazi Mark Six analysis results in this app are provided by AI algorithms\n• All number suggestions are based solely on Bazi fortune-telling calculations for entertainment reference\n• Does not guarantee any winning results or constitute investment advice\n• This app does NOT involve any real money transactions\n• This app does NOT provide gambling services or platforms\n• Does not encourage or promote any gambling activities\n• No affiliation with Hong Kong Jockey Club or any gaming organizations\n\nPlease use responsibly and within your means. Gambling can lead to addiction. Seek professional help if needed.\n\nFor users 18 years and older only.",
     "firstLaunchTitle": "Welcome",
     "firstLaunchContent": "⚠️ Please Read Carefully Before Use\n\nThis application is an entertainment tool based on traditional Bazi fortune-telling that provides lucky number suggestions for your reference.\n\nImportant Notes:\n• For entertainment and fortune-telling research only\n• No real money transactions involved\n• Does not provide gambling services\n• All suggestions are for reference only\n• No results guaranteed\n\nPlease confirm you are 18 years or older and agree to use this application responsibly.",
     "agree": "I have read and agree",
