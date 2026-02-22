@@ -1,0 +1,8 @@
+name = "ai-bazi-mark-six-privacy"
+main = "privacy-worker.js"
+compatibility_date = "2026-02-22"
+workers_dev = true
+
+routes = [
+  { pattern = "privacy.tenetconcept.com/*", zone_name = "tenetconcept.com" }
+]
